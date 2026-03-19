@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NIT Campus — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #0a0f1e;
+      --accent:      #f97316;
+      --accent2:     #fbbf24;
+      --teal:        #2dd4bf;
+      --text:        #f1f5f9;
+      --muted:       #94a3b8;
+      --card-bg:     rgba(255,255,255,0.04);
+      --card-border: rgba(255,255,255,0.09);
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0%   50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0%   50%; }
+    }
+    @keyframes floatDot {
+      0%, 100% { transform: translateY(0px);  }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* ── background grid ── */
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── glow orbs ── */
+    .orb {
+      position: fixed; border-radius: 50%;
+      pointer-events: none; z-index: 0; filter: blur(80px);
+    }
+    .orb1 { width:420px; height:420px; background:rgba(249,115,22,0.12);  top:-100px; right:-80px; }
+    .orb2 { width:300px; height:300px; background:rgba(45,212,191,0.09); bottom:60px; left:-60px;  }
+
+    /* ── page layout ── */
+    .page { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── navbar ── */
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      border-bottom: 1px solid var(--card-border);
+      animation: fadeUp 0.5s ease both;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 18px; letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .nav-tag {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+      color: var(--muted); text-transform: uppercase;
+      border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 20px;
+    }
+
+    /* ── hero ── */
+    main {
+      flex: 1; position: relative; z-index: 5;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 80px 24px 48px; text-align: center;
+    }
+    .eyebrow {
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--teal); font-weight: 500; margin-bottom: 20px;
+      animation: fadeUp 0.5s 0.1s ease both; opacity: 0;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.05; letter-spacing: -2px; margin-bottom: 20px;
+      animation: fadeUp 0.55s 0.2s ease both; opacity: 0;
+    }
+    .grad {
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+    background-size: 200% auto;
+    -webkit-background-clip: text;   /* for Safari */
+    background-clip: text;           /* ← add this line */
+    -webkit-text-fill-color: transparent;
+    animation: gradShift 3s linear infinite;
+    }
+
+    .subtitle {
+      font-size: 16px; color: var(--muted); max-width: 460px;
+      line-height: 1.7; margin-bottom: 52px;
+      animation: fadeUp 0.55s 0.3s ease both; opacity: 0;
+    }
+
+    /* ── cards ── */
+    .cards {
+      display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.6s 0.45s ease both; opacity: 0;
+    }
+    .card {
+      width: 260px; background: var(--card-bg);
+      border: 1px solid var(--card-border); border-radius: 20px;
+      padding: 32px 28px 28px; cursor: pointer;
+      transition: transform 0.22s, border-color 0.22s, background 0.22s;
+      text-align: left; position: relative; overflow: hidden;
+      text-decoration: none; color: inherit; display: block;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+    }
+    .card::before {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 20px; opacity: 0; transition: opacity 0.25s;
+    }
+    .card.student::before  { background: radial-gradient(circle at 60% 0%, rgba(249,115,22,0.14),  transparent 70%); }
+    .card.provider::before { background: radial-gradient(circle at 60% 0%, rgba(45,212,191,0.12), transparent 70%); }
+    .card:hover::before { opacity: 1; }
+
+    .card-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 20px;
+    }
+    .card.student  .card-icon { background: rgba(249,115,22,0.15); }
+    .card.provider .card-icon { background: rgba(45,212,191,0.12); }
+
+    .card-title {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 20px; margin-bottom: 8px; letter-spacing: -0.5px;
+    }
+    .card-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+
+    .card-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 500;
+      padding: 8px 16px; border-radius: 30px; transition: gap 0.2s;
+    }
+    .card:hover .card-btn { gap: 10px; }
+    .card.student  .card-btn { background: rgba(249,115,22,0.18); color: #fb923c; }
+    .card.provider .card-btn { background: rgba(45,212,191,0.15); color: #2dd4bf; }
+
+    /* ── footer strip ── */
+    footer {
+      position: relative; z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+      gap: 28px; flex-wrap: wrap; padding: 24px 48px 32px;
+      border-top: 1px solid var(--card-border);
+      animation: fadeUp 0.6s 0.6s ease both; opacity: 0;
+    }
+    .strip-label { font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    .strip-item  { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; animation: floatDot 2.4s ease-in-out infinite; }
+    .dot.teal   { background: var(--teal);    animation-delay: 0s;   }
+    .dot.orange { background: var(--accent);  animation-delay: 0.4s; }
+    .dot.yellow { background: var(--accent2); animation-delay: 0.8s; }
+
+    /* ── responsive ── */
+    @media (max-width: 600px) {
+      nav    { padding: 18px 20px; }
+      footer { padding: 20px; gap: 16px; }
+      .card  { width: 100%; max-width: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="grid-bg"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+
+    <!-- navbar -->
+    <nav>
+      <div class="logo">Campus<span> Connect</span></div>
+      <div class="nav-tag">Live Services</div>
+    </nav>
+
+    <!-- hero section -->
+    <main>
+      <div class="eyebrow">Campus Connect — All services in one place</div>
+
+      <h1>Your campus,<br><span class="grad">always open.</span></h1>
+
+      <p class="subtitle">
+        Order from the canteen, shop the convenience store, or book a scooty —
+        all from one place, in real time.
+      </p>
+
+      <div class="cards">
+
+        <!-- Student card — links to student/login.html -->
+        <a class="card student" href="student/login.html">
+          <div class="card-icon">🎓</div>
+          <div class="card-title">I'm a Student</div>
+          <div class="card-desc">
+            Browse services, place orders, book scooties and
+            get digital receipts instantly.
+          </div>
+          <div class="card-btn">Enter portal →</div>
+        </a>
+
+        <!-- Provider card — links to provider/login.html -->
+        <a class="card provider" href="provider/login.html">
+          <div class="card-icon">🏪</div>
+          <div class="card-title">Service Provider</div>
+          <div class="card-desc">
+            Manage your canteen, store or scooty fleet.
+            Update availability live for students.
+          </div>
+          <div class="card-btn">Manage service →</div>
+        </a>
+
+      </div>
+    </main>
+
+    <!-- services strip -->
+    <footer>
+      <span class="strip-label">Services available</span>
+      <div class="strip-item"><div class="dot teal"></div>   Canteen</div>
+      <div class="strip-item"><div class="dot orange"></div> Convenience Store</div>
+      <div class="strip-item"><div class="dot yellow"></div> Scooty Rental</div>
+    </footer>
+  </div>
+</body>
+</html>

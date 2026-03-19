@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#7c2d12; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#fed7aa; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    /* sidebar */
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { background:linear-gradient(90deg,#ea580c,#d97706); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    /* main */
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 60px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    /* summary stats */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .stat-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:16px 20px; display:flex; align-items:center; gap:14px; }
+    .stat-icon { font-size:24px; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .stat-icon.canteen  { background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.2); }
+    .stat-icon.store    { background:rgba(5,150,105,0.1);  border:1px solid rgba(5,150,105,0.2); }
+    .stat-icon.scooty   { background:rgba(217,119,6,0.1);  border:1px solid rgba(217,119,6,0.2); }
+    .stat-val   { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:#f97316; }
+    .stat-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+    /* tabs */
+    .tabs { display:flex; gap:6px; margin-bottom:22px; animation:fadeUp 0.4s 0.2s ease both; opacity:0; }
+    .tab-btn { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:10px; font-size:13px; font-weight:500; border:1px solid var(--glass-border); background:var(--glass); color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .tab-btn:hover { background:var(--glass-hover); color:var(--text); }
+    .tab-btn.active { background:rgba(249,115,22,0.15); color:#f97316; border-color:rgba(249,115,22,0.3); }
+    .tab-count { font-size:10px; background:rgba(249,115,22,0.15); color:#f97316; border-radius:20px; padding:1px 7px; }
+    .tab-btn:not(.active) .tab-count { background:var(--glass); color:var(--muted); }
+    .tab-panel { display:none; animation:fadeUp 0.35s ease both; }
+    .tab-panel.active { display:block; }
+
+    /* order cards */
+    .orders-list { display:flex; flex-direction:column; gap:12px; }
+
+    .order-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:18px; overflow:hidden; transition:border-color 0.2s,transform 0.2s; }
+    .order-card:hover { border-color:rgba(249,115,22,0.2); transform:translateY(-2px); }
+
+    .order-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid var(--glass-border); }
+    .order-id-wrap { display:flex; align-items:center; gap:10px; }
+    .order-service-icon { font-size:16px; width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; }
+    .icon-canteen { background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.2); }
+    .icon-store   { background:rgba(5,150,105,0.1);  border:1px solid rgba(5,150,105,0.2); }
+    .icon-scooty  { background:rgba(217,119,6,0.1);  border:1px solid rgba(217,119,6,0.2); }
+    .order-id   { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:#f97316; }
+    .order-time { font-size:11px; color:var(--muted); margin-top:1px; }
+    .status-badge { font-size:10px; padding:4px 12px; border-radius:20px; font-weight:500; }
+    .badge-completed { background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+    .badge-pending   { background:rgba(251,191,36,0.1); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); }
+    .badge-cancelled { background:rgba(239,68,68,0.1);  color:#f87171; border:1px solid rgba(239,68,68,0.2); }
+    .badge-active    { background:rgba(59,130,246,0.1); color:#60a5fa; border:1px solid rgba(59,130,246,0.2); }
+
+    .order-body { padding:14px 20px; }
+    .order-items-list { margin-bottom:12px; }
+    .order-item-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:5px 0; border-bottom:1px solid var(--glass-border); color:var(--text); }
+    .order-item-row:last-child { border-bottom:none; }
+    .order-item-name { color:var(--text); }
+    .order-item-price { color:var(--muted); font-size:12px; }
+
+    .order-footer { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:rgba(249,115,22,0.04); border-top:1px solid var(--glass-border); }
+    .order-total-label { font-size:12px; color:var(--muted); }
+    .order-total-val   { font-size:15px; font-weight:600; color:#f97316; }
+    .reorder-btn { padding:7px 16px; border-radius:9px; font-size:12px; font-weight:500; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.25); color:#f97316; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .reorder-btn:hover { background:rgba(249,115,22,0.22); }
+
+    /* scooty booking card extras */
+    .booking-detail-row { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:10px; }
+    .booking-chip { font-size:11px; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); border-radius:8px; padding:5px 10px; display:flex; align-items:center; gap:5px; }
+    .booking-chip strong { color:var(--text); }
+
+    /* empty state */
+    .empty-state { text-align:center; padding:64px 24px; color:var(--muted); }
+    .empty-icon  { font-size:48px; margin-bottom:14px; opacity:0.25; }
+    .empty-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; opacity:0.5; }
+    .empty-text  { font-size:13px; }
+
+    @media (max-width:900px) { .stats-row{grid-template-columns:1fr 1fr;} }
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 60px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} .tabs{flex-wrap:wrap;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="canteen.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="store.html"><span class="nav-icon">🛒</span> Convenience Store</a>
+    <a class="nav-item" href="scooty.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <a class="nav-item" href="hospital.html"><span class="nav-icon">🏥</span> Hospital</a>
+    <a class="nav-item" href="postoffice.html"><span class="nav-icon">📮</span> Post Office</a>
+    <a class="nav-item" href="bus.html"><span class="nav-icon">🚌</span> Bus Service</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <a class="nav-item active" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🧾 My Orders</div>
+        <div class="page-sub">Your complete order history across all campus services</div>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon canteen">🍽</div>
+        <div><div class="stat-val" id="canteen-order-count">0</div><div class="stat-label">Canteen orders</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon store">🛒</div>
+        <div><div class="stat-val" id="store-order-count">0</div><div class="stat-label">Store orders</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon scooty">🛵</div>
+        <div><div class="stat-val" id="scooty-order-count">0</div><div class="stat-label">Scooty bookings</div></div>
+      </div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('canteen')">
+        🍽 Canteen <span class="tab-count" id="tab-count-canteen">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('store')">
+        🛒 Store <span class="tab-count" id="tab-count-store">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('scooty')">
+        🛵 Scooty <span class="tab-count" id="tab-count-scooty">0</span>
+      </button>
+    </div>
+
+    <!-- CANTEEN TAB -->
+    <div class="tab-panel active" id="tab-canteen">
+      <div class="orders-list" id="canteen-orders-list"></div>
+    </div>
+
+    <!-- STORE TAB -->
+    <div class="tab-panel" id="tab-store">
+      <div class="orders-list" id="store-orders-list"></div>
+    </div>
+
+    <!-- SCOOTY TAB -->
+    <div class="tab-panel" id="tab-scooty">
+      <div class="orders-list" id="scooty-orders-list"></div>
+    </div>
+  </div>
+
+  <script>
+   let canteenOrders = [];
+    let storeOrders   = [];
+    let scootyOrders  = [];
+
+    // ── RENDER ──
+    function statusBadge(status) {
+      const map = {
+        completed: 'badge-completed',
+        pending:   'badge-pending',
+        cancelled: 'badge-cancelled',
+        active:    'badge-active',
+      };
+      const label = { completed:'✅ Completed', pending:'⏳ Pending', cancelled:'❌ Cancelled', active:'🔵 Active' };
+      return `<span class="status-badge ${map[status]}">${label[status]}</span>`;
+    }
+
+    function totalOf(items) {
+      return items.reduce((s, i) => s + i.price, 0);
+    }
+
+    function renderCanteen() {
+      const list = document.getElementById('canteen-orders-list');
+      if (!canteenOrders.length) { list.innerHTML = emptyState('🍽', 'No canteen orders yet', 'Your canteen orders will appear here.'); return; }
+      list.innerHTML = canteenOrders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-id-wrap">
+              <div class="order-service-icon icon-canteen">🍽</div>
+              <div>
+                <div class="order-id">${o.id}</div>
+                <div class="order-time">${o.time}</div>
+              </div>
+            </div>
+            ${statusBadge(o.status)}
+          </div>
+          <div class="order-body">
+            <div class="order-items-list">
+              ${o.items.map(i => `
+                <div class="order-item-row">
+                  <span class="order-item-name">${i.name}</span>
+                  <span class="order-item-price">₹${i.price}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="order-footer">
+            <div><div class="order-total-label">Total paid</div><div class="order-total-val">₹${totalOf(o.items)}</div></div>
+            ${o.status === 'completed' ? `<button class="reorder-btn" onclick="reorder('canteen')">🔁 Reorder</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderStore() {
+      const list = document.getElementById('store-orders-list');
+      if (!storeOrders.length) { list.innerHTML = emptyState('🛒', 'No store orders yet', 'Your store purchases will appear here.'); return; }
+      list.innerHTML = storeOrders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-id-wrap">
+              <div class="order-service-icon icon-store">🛒</div>
+              <div>
+                <div class="order-id">${o.id}</div>
+                <div class="order-time">${o.time}</div>
+              </div>
+            </div>
+            ${statusBadge(o.status)}
+          </div>
+          <div class="order-body">
+            <div class="order-items-list">
+              ${o.items.map(i => `
+                <div class="order-item-row">
+                  <span class="order-item-name">${i.name}</span>
+                  <span class="order-item-price">₹${i.price}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="order-footer">
+            <div><div class="order-total-label">Total paid</div><div class="order-total-val">₹${totalOf(o.items)}</div></div>
+            ${o.status === 'completed' ? `<button class="reorder-btn" onclick="reorder('store')">🔁 Reorder</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderScooty() {
+      const list = document.getElementById('scooty-orders-list');
+      if (!scootyOrders.length) { list.innerHTML = emptyState('🛵', 'No scooty bookings yet', 'Your scooty rentals will appear here.'); return; }
+      list.innerHTML = scootyOrders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-id-wrap">
+              <div class="order-service-icon icon-scooty">🛵</div>
+              <div>
+                <div class="order-id">${o.id}</div>
+                <div class="order-time">${o.time}</div>
+              </div>
+            </div>
+            ${statusBadge(o.status)}
+          </div>
+          <div class="order-body">
+            <div class="booking-detail-row">
+              <div class="booking-chip">🛵 <strong>${o.scootyId}</strong> · ${o.model}</div>
+              <div class="booking-chip">⏱ <strong>${o.rentalType}</strong> · ${o.duration}</div>
+              <div class="booking-chip">📅 <strong>Start:</strong> ${o.start}</div>
+            </div>
+          </div>
+          <div class="order-footer">
+            <div><div class="order-total-label">Total paid</div><div class="order-total-val">₹${o.total}</div></div>
+            ${o.status === 'completed' ? `<button class="reorder-btn" onclick="reorder('scooty')">🔁 Book again</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function emptyState(icon, title, text) {
+      return `<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-text">${text}</div></div>`;
+    }
+
+    function updateCounts() {
+      document.getElementById('canteen-order-count').textContent = canteenOrders.length;
+      document.getElementById('store-order-count').textContent   = storeOrders.length;
+      document.getElementById('scooty-order-count').textContent  = scootyOrders.length;
+      document.getElementById('tab-count-canteen').textContent   = canteenOrders.length;
+      document.getElementById('tab-count-store').textContent     = storeOrders.length;
+      document.getElementById('tab-count-scooty').textContent    = scootyOrders.length;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['canteen','store','scooty'][i] === tab);
+      });
+      document.getElementById('tab-canteen').classList.toggle('active', tab === 'canteen');
+      document.getElementById('tab-store').classList.toggle('active',   tab === 'store');
+      document.getElementById('tab-scooty').classList.toggle('active',  tab === 'scooty');
+    }
+
+    function reorder(service) {
+      window.location.href = service === 'canteen' ? 'canteen.html' : service === 'store' ? 'store.html' : 'scooty.html';
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+
+    // ── INIT ──
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+
+    async function loadOrders() {
+      try {
+        const res  = await fetch('http://127.0.0.1:5000/api/my-orders');
+        const data = await res.json();
+        canteenOrders = data.canteen || [];
+        storeOrders   = data.store   || [];
+        scootyOrders  = data.scooty  || [];
+      } catch(e) {
+        console.log('Using mock data');
+      }
+      renderCanteen();
+      renderStore();
+      renderScooty();
+      updateCounts();
+    }
+    loadOrders();
+  </script>
+</body>
+</html>

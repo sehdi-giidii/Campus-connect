@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bus Service Provider — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#134e4a; --blob2:#0c4a6e; --blob3:#4c1d95; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#99f6e4; --blob2:#bae6fd; --blob3:#c4b5fd; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .provider-badge { display:inline-block; font-size:10px; background:rgba(20,184,166,0.15); color:#2dd4bf; border:1px solid rgba(20,184,166,0.25); border-radius:20px; padding:2px 8px; margin-bottom:10px; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#0f766e,#1e40af); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .provider-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .provider-role  { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(20,184,166,0.12); color:#2dd4bf; border:1px solid rgba(20,184,166,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 60px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    .status-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:24px; padding:40px; text-align:center; margin-bottom:24px; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .status-emoji { font-size:64px; margin-bottom:16px; display:block; }
+    .status-text  { font-family:'Syne',sans-serif; font-weight:800; font-size:28px; letter-spacing:-1px; margin-bottom:8px; }
+    .status-text.running    { color:#10b981; }
+    .status-text.notrunning { color:#f87171; }
+    .status-sub { font-size:13px; color:var(--muted); margin-bottom:32px; }
+
+    .toggle-btns { display:flex; gap:12px; justify-content:center; margin-bottom:24px; }
+    .toggle-btn { padding:14px 32px; border-radius:14px; font-size:14px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; border:2px solid; }
+    .toggle-btn.run-btn   { background:rgba(16,185,129,0.1);  color:#10b981; border-color:rgba(16,185,129,0.3); }
+    .toggle-btn.run-btn:hover   { background:rgba(16,185,129,0.2); }
+    .toggle-btn.run-btn.active-btn   { background:rgba(16,185,129,0.25); border-color:#10b981; box-shadow:0 0 20px rgba(16,185,129,0.2); }
+    .toggle-btn.stop-btn  { background:rgba(239,68,68,0.1);  color:#f87171; border-color:rgba(239,68,68,0.3); }
+    .toggle-btn.stop-btn:hover  { background:rgba(239,68,68,0.2); }
+    .toggle-btn.stop-btn.active-btn  { background:rgba(239,68,68,0.25); border-color:#f87171; box-shadow:0 0 20px rgba(239,68,68,0.2); }
+
+    .live-indicator { display:flex; align-items:center; justify-content:center; gap:8px; font-size:12px; color:var(--muted); }
+    .live-dot { width:8px; height:8px; border-radius:50%; }
+    .live-dot.green { background:#10b981; animation:pulse 2s ease-in-out infinite; }
+    .live-dot.red   { background:#f87171; animation:pulse 2s ease-in-out infinite; }
+
+    .coming-soon { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:20px; padding:28px; animation:fadeUp 0.4s 0.2s ease both; opacity:0; }
+    .coming-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .coming-badge { font-size:10px; background:rgba(251,191,36,0.15); color:#fbbf24; border:1px solid rgba(251,191,36,0.3); border-radius:20px; padding:2px 8px; }
+    .coming-sub { font-size:12px; color:var(--muted); margin-bottom:20px; }
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+    .feature-card { background:var(--glass); border:1px dashed var(--glass-border); border-radius:14px; padding:16px; text-align:center; opacity:0.6; }
+    .feature-icon { font-size:24px; margin-bottom:8px; display:block; }
+    .feature-name { font-size:12px; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .feature-desc { font-size:10px; color:var(--muted); }
+    .soon-tag { display:inline-block; font-size:9px; background:rgba(251,191,36,0.1); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); border-radius:20px; padding:1px 7px; margin-top:6px; }
+
+    .toast { position:fixed; bottom:28px; right:28px; z-index:50; padding:12px 20px; border-radius:12px; font-size:13px; font-weight:500; backdrop-filter:blur(20px); border:1px solid var(--glass-border); transform:translateY(80px); opacity:0; transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+    .toast.show    { transform:translateY(0); opacity:1; }
+    .toast.success { background:rgba(16,185,129,0.15); color:#10b981; border-color:rgba(16,185,129,0.3); }
+    .toast.error   { background:rgba(239,68,68,0.15);  color:#f87171; border-color:rgba(239,68,68,0.3); }
+
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 60px;} .toggle-btns{flex-direction:column;align-items:center;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="provider-badge">⚙️ Provider Panel</div>
+    <div class="avatar">🚌</div>
+    <div class="provider-name" id="provider-name">Provider</div>
+    <div class="provider-role">Bus Service Manager</div>
+    <div class="divider"></div>
+    <div class="nav-label">Manage</div>
+    <a class="nav-item active" href="bus_provider.html"><span class="nav-icon">🚌</span> Bus Service</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🚌 Bus Service Dashboard</div>
+        <div class="page-sub">Set the bus running status for students on campus</div>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <span class="status-emoji" id="status-emoji">🚌</span>
+      <div class="status-text running" id="status-text">Bus is Running</div>
+      <div class="status-sub" id="status-sub">Students can see the bus is currently running</div>
+
+      <div class="toggle-btns">
+        <button class="toggle-btn run-btn active-btn" id="btn-run"  onclick="setStatus('running')">
+          🚌 Mark Running
+        </button>
+        <button class="toggle-btn stop-btn"           id="btn-stop" onclick="setStatus('stopped')">
+          🛑 Mark Not Running
+        </button>
+      </div>
+
+      <div class="live-indicator">
+        <div class="live-dot green" id="live-dot"></div>
+        <span id="live-text">Live — students can see this status</span>
+      </div>
+    </div>
+
+    <div class="coming-soon">
+      <div class="coming-title">
+        More Features
+        <span class="coming-badge">🚧 Coming Soon</span>
+      </div>
+      <div class="coming-sub">These features are under development and will be available soon</div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">🗺️</span>
+          <div class="feature-name">Live Route Map</div>
+          <div class="feature-desc">Show bus route and stops on a map</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">⏱️</span>
+          <div class="feature-name">Departure Timings</div>
+          <div class="feature-desc">Set and display bus schedule timings</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔔</span>
+          <div class="feature-name">Delay Alerts</div>
+          <div class="feature-desc">Notify students about bus delays</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🪑</span>
+          <div class="feature-name">Seat Availability</div>
+          <div class="feature-desc">Show how many seats are available</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📍</span>
+          <div class="feature-name">Stop Management</div>
+          <div class="feature-desc">Add and manage bus stops on route</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📊</span>
+          <div class="feature-name">Ridership Stats</div>
+          <div class="feature-desc">Track how many students use the bus</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let isRunning = true;
+
+    function setStatus(status) {
+      isRunning = status === 'running';
+
+      document.getElementById('status-emoji').textContent = isRunning ? '🚌' : '🛑';
+      document.getElementById('status-text').textContent  = isRunning ? 'Bus is Running' : 'Bus is Not Running';
+      document.getElementById('status-text').className    = 'status-text ' + (isRunning ? 'running' : 'notrunning');
+      document.getElementById('status-sub').textContent   = isRunning
+        ? 'Students can see the bus is currently running'
+        : 'Students will see that the bus is not running today';
+
+      document.getElementById('btn-run').classList.toggle('active-btn',  isRunning);
+      document.getElementById('btn-stop').classList.toggle('active-btn', !isRunning);
+
+      document.getElementById('live-dot').className    = 'live-dot ' + (isRunning ? 'green' : 'red');
+      document.getElementById('live-text').textContent = isRunning
+        ? 'Live — students can see this status'
+        : 'Live — students see bus as not running';
+
+      showToast(
+        isRunning ? '🚌 Bus marked as Running' : '🛑 Bus marked as Not Running',
+        isRunning ? 'success' : 'error'
+      );
+
+      // TODO: sync with Flask
+      // fetch('http://127.0.0.1:5000/api/bus/status', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ is_running: isRunning })
+      // });
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type + ' show';
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('provider_name');
+      window.location.href = '../index.html';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('provider-name').textContent = localStorage.getItem('provider_name') || 'Provider';
+  </script>
+</body>
+</html>

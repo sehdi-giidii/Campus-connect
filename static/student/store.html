@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Store — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#064e3b; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#a7f3d0; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    /* sidebar */
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    /* main */
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 120px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    /* search bar */
+    .search-bar { position:relative; margin-bottom:20px; animation:fadeUp 0.4s 0.13s ease both; opacity:0; }
+    .search-input { width:100%; padding:11px 16px 11px 40px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; backdrop-filter:blur(16px); }
+    .search-input:focus { border-color:rgba(249,115,22,0.4); }
+    .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:14px; opacity:0.4; }
+
+    .status-banner { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px; margin-bottom:24px; font-size:13px; font-weight:500; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .status-banner.open   { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); color:#10b981; }
+    .status-banner.closed { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.2); color:#f87171; }
+    .status-dot { width:8px; height:8px; border-radius:50%; animation:floatDot 2s ease-in-out infinite; }
+    .open .status-dot   { background:#10b981; }
+    .closed .status-dot { background:#f87171; }
+
+    /* category filter */
+    .cat-filter { display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; animation:fadeUp 0.4s 0.18s ease both; opacity:0; }
+    .cat-btn { padding:7px 16px; border-radius:20px; font-size:12px; font-weight:500; border:1px solid var(--glass-border); background:var(--glass); color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .cat-btn:hover { background:var(--glass-hover); color:var(--text); }
+    .cat-btn.active { background:rgba(249,115,22,0.15); color:#f97316; border-color:rgba(249,115,22,0.3); }
+
+    .section { margin-bottom:32px; animation:fadeUp 0.5s 0.2s ease both; opacity:0; }
+    .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .section-count { font-size:11px; font-weight:400; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); padding:2px 8px; border-radius:20px; }
+
+    .item-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; }
+
+    .item-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; overflow:hidden; transition:transform 0.2s,border-color 0.2s; }
+    .item-card:hover { transform:translateY(-3px); border-color:rgba(249,115,22,0.25); }
+    .item-card.unavailable { opacity:0.4; }
+
+    .item-img { width:100%; height:100px; overflow:hidden; border-bottom:1px solid var(--glass-border); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; }
+    .item-img img { width:100%; height:100%; object-fit:cover; }
+    .img-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .ph-icon { font-size:22px; opacity:0.2; }
+    .ph-text { font-size:10px; color:var(--muted); opacity:0.5; }
+
+    .item-body { padding:11px 13px; }
+    .item-name { font-size:13px; font-weight:500; color:var(--text); margin-bottom:5px; }
+    .item-avail { font-size:10px; padding:2px 8px; border-radius:20px; margin-bottom:8px; display:inline-block; }
+    .avail-yes { background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+    .avail-no  { background:rgba(239,68,68,0.1);  color:#f87171; border:1px solid rgba(239,68,68,0.2); }
+    .item-price { font-size:14px; color:#f97316; font-weight:500; margin-bottom:10px; }
+
+    .qty-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .qty-btn { width:26px; height:26px; border-radius:8px; border:1px solid var(--glass-border); background:var(--glass); color:var(--text); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+    .qty-btn:hover { background:rgba(249,115,22,0.15); border-color:rgba(249,115,22,0.3); color:#f97316; }
+    .qty-val { font-size:13px; font-weight:500; min-width:20px; text-align:center; }
+
+    .add-btn { width:100%; padding:7px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.25); border-radius:8px; font-size:12px; font-weight:500; color:#f97316; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .add-btn:hover { background:rgba(249,115,22,0.25); }
+    .item-card.unavailable .add-btn { pointer-events:none; opacity:0.5; }
+
+    /* cart bar */
+    .cart-bar { position:fixed; bottom:0; left:240px; right:0; z-index:20; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-top:1px solid var(--glass-border); padding:16px 36px; display:flex; align-items:center; justify-content:space-between; transform:translateY(100%); transition:transform 0.3s; }
+    .cart-bar.visible { transform:translateY(0); }
+    .cart-info { font-size:14px; color:var(--text); }
+    .cart-info span { color:#f97316; font-weight:500; }
+    .cart-actions { display:flex; gap:10px; }
+    .clear-btn    { padding:9px 18px; border-radius:10px; font-size:13px; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .checkout-btn { padding:9px 20px; border-radius:10px; font-size:13px; font-weight:500; background:#f97316; color:#fff; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity 0.2s; }
+    .checkout-btn:hover { opacity:0.9; }
+
+    /* receipt modal */
+    .modal-overlay { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--sidebar-bg); backdrop-filter:blur(28px); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:400px; max-height:90vh; overflow-y:auto; }
+    .modal-title { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; margin-bottom:4px; color:var(--text); }
+    .modal-sub    { font-size:12px; color:var(--muted); margin-bottom:20px; }
+    .receipt-row  { display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-bottom:1px solid var(--glass-border); color:var(--text); }
+    .receipt-total { display:flex; justify-content:space-between; font-size:15px; font-weight:500; padding:12px 0 0; color:var(--text); }
+    .receipt-total span { color:#f97316; }
+    .order-id { font-size:11px; color:var(--muted); margin-top:8px; text-align:center; }
+    .modal-btns { display:flex; gap:10px; margin-top:20px; }
+    .print-btn { flex:1; padding:11px; background:#f97316; color:#fff; border:none; border-radius:12px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .close-btn { flex:1; padding:11px; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); border-radius:12px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 100px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} .cart-bar{left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="canteen.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🛒</span> Store</a>
+    <a class="nav-item" href="scooty.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🛒 Convenience Store</div>
+        <div class="page-sub">Snacks, drinks, stationery and personal care — all in one place!</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-input" type="text" placeholder="Search items..." oninput="filterItems()"/>
+    </div>
+
+    <div class="status-banner open" id="status-banner">
+      <div class="status-dot"></div>
+      Store is Open — browse and order now
+    </div>
+
+    <div class="cat-filter">
+      <button class="cat-btn active" onclick="setCat('all', this)">All</button>
+      <button class="cat-btn" onclick="setCat('snacks', this)">🍿 Snacks & Chips</button>
+      <button class="cat-btn" onclick="setCat('drinks', this)">🥤 Drinks</button>
+      <button class="cat-btn" onclick="setCat('stationery', this)">✏️ Stationery</button>
+      <button class="cat-btn" onclick="setCat('personal', this)">🧴 Personal Care</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🍿 Snacks &amp; Chips <span class="section-count" id="snacks-count"></span></div>
+      <div class="item-grid" id="snacks-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">🥤 Drinks &amp; Beverages <span class="section-count" id="drinks-count"></span></div>
+      <div class="item-grid" id="drinks-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">✏️ Stationery <span class="section-count" id="stationery-count"></span></div>
+      <div class="item-grid" id="stationery-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">🧴 Personal Care <span class="section-count" id="personal-count"></span></div>
+      <div class="item-grid" id="personal-grid"></div>
+    </div>
+  </div>
+
+  <!-- cart bar -->
+  <div class="cart-bar" id="cart-bar">
+    <div class="cart-info"><span id="cart-count">0</span> items · ₹<span id="cart-total">0</span></div>
+    <div class="cart-actions">
+      <button class="clear-btn" onclick="clearCart()">Clear</button>
+      <button class="checkout-btn" onclick="checkout()">Place Order →</button>
+    </div>
+  </div>
+
+  <!-- receipt modal -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal">
+      <div class="modal-title">🧾 Order Receipt</div>
+      <div class="modal-sub" id="receipt-date"></div>
+      <div id="receipt-items"></div>
+      <div class="receipt-total">Total <span id="receipt-total">₹0</span></div>
+      <div class="order-id" id="order-id"></div>
+      <div class="modal-btns">
+        <button class="print-btn" onclick="window.print()">Print Receipt</button>
+        <button class="close-btn" onclick="closeReceipt()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const IMG = '/static/student/images/store/';
+
+    const storeItems = {
+      snacks: [
+        { id:1,  name:'Lays Classic',       price:20,  available:true,  img:null },
+        { id:2,  name:'Kurkure',            price:20,  available:true,  img:null },
+        { id:3,  name:'Biscuits (Parle-G)', price:10,  available:true,  img:null },
+        { id:4,  name:'Oreo',               price:30,  available:true,  img:null },
+        { id:5,  name:'Maggi (Packet)',      price:25,  available:true,  img:null },
+        { id:6,  name:'Chocolate (Dairy Milk)', price:40, available:true, img:null },
+      ],
+      drinks: [
+        { id:7,  name:'Cold Drink (250ml)', price:30,  available:true,  img:null },
+        { id:8,  name:'Juice Tetrapack',    price:25,  available:true,  img:null },
+        { id:9,  name:'Water Bottle (1L)',  price:20,  available:true,  img:null },
+        { id:10, name:'Energy Drink',       price:100, available:false, img:null },
+        { id:11, name:'Lassi (250ml)',      price:30,  available:true,  img:null },
+      ],
+      stationery: [
+        { id:12, name:'Pen (Blue)',         price:10,  available:true,  img:null },
+        { id:13, name:'Pencil',             price:5,   available:true,  img:null },
+        { id:14, name:'Notebook (100pg)',   price:60,  available:true,  img:null },
+        { id:15, name:'Eraser',             price:5,   available:true,  img:null },
+        { id:16, name:'Highlighter',        price:30,  available:true,  img:null },
+        { id:17, name:'Stapler',            price:80,  available:false, img:null },
+      ],
+      personal: [
+        { id:18, name:'Soap (Dettol)',      price:40,  available:true,  img:null },
+        { id:19, name:'Shampoo Sachet',     price:5,   available:true,  img:null },
+        { id:20, name:'Toothpaste (small)', price:35,  available:true,  img:null },
+        { id:21, name:'Sanitary Pad',       price:50,  available:true,  img:null },
+        { id:22, name:'Hand Sanitizer',     price:60,  available:true,  img:null },
+        { id:23, name:'Face Wash Sachet',   price:10,  available:false, img:null },
+      ],
+    };
+
+    const qtyState = {};
+    Object.values(storeItems).flat().forEach(i => qtyState[i.id] = 1);
+
+    let cart = [];
+    let activeCat = 'all';
+    let searchQuery = '';
+
+    function imgHtml(item) {
+      if (item.img) {
+        return `<img src="${IMG}${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div class=img-placeholder><div class=ph-icon>📷</div></div>'"/>`;
+      }
+      return `<div class="img-placeholder"><div class="ph-icon">🛍️</div><div class="ph-text">Image soon</div></div>`;
+    }
+
+    function renderGrid(cat, gridId, countId) {
+      let items = storeItems[cat];
+      if (searchQuery) items = items.filter(i => i.name.toLowerCase().includes(searchQuery));
+      if (activeCat !== 'all' && activeCat !== cat) {
+        document.getElementById(gridId).closest('.section').style.display = 'none';
+        return;
+      }
+      document.getElementById(gridId).closest('.section').style.display = '';
+      document.getElementById(countId).textContent = items.length + ' items';
+      document.getElementById(gridId).innerHTML = items.length === 0
+        ? `<div style="color:var(--muted);font-size:13px;padding:12px 0">No items found</div>`
+        : items.map(item => `
+          <div class="item-card ${item.available ? '' : 'unavailable'}">
+            <div class="item-img">${imgHtml(item)}</div>
+            <div class="item-body">
+              <div class="item-name">${item.name}</div>
+              <span class="item-avail ${item.available ? 'avail-yes' : 'avail-no'}">${item.available ? 'Available' : 'Unavailable'}</span>
+              <div class="item-price">₹${item.price}</div>
+              <div class="qty-row">
+                <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+                <span class="qty-val" id="qty-${item.id}">${qtyState[item.id]}</span>
+                <button class="qty-btn" onclick="changeQty(${item.id}, +1)">+</button>
+              </div>
+              <button class="add-btn" onclick="addToCart(${item.id}, '${cat}')">+ Add to cart</button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function renderAll() {
+      renderGrid('snacks',     'snacks-grid',     'snacks-count');
+      renderGrid('drinks',     'drinks-grid',     'drinks-count');
+      renderGrid('stationery', 'stationery-grid', 'stationery-count');
+      renderGrid('personal',   'personal-grid',   'personal-count');
+    }
+
+    function changeQty(id, delta) {
+      qtyState[id] = Math.max(1, (qtyState[id] || 1) + delta);
+      const el = document.getElementById('qty-' + id);
+      if (el) el.textContent = qtyState[id];
+    }
+
+    function addToCart(id, cat) {
+      const item  = storeItems[cat].find(i => i.id === id);
+      const qty   = qtyState[id];
+      const exist = cart.find(i => i.id === id);
+      if (exist) exist.qty += qty;
+      else cart.push({ id, name: item.name, price: item.price, qty });
+      qtyState[id] = 1;
+      const el = document.getElementById('qty-' + id);
+      if (el) el.textContent = 1;
+      updateCart();
+    }
+
+    function updateCart() {
+      const count = cart.reduce((s, i) => s + i.qty, 0);
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cart-total').textContent = total;
+      document.getElementById('cart-bar').classList.toggle('visible', count > 0);
+    }
+
+    function clearCart() { cart = []; updateCart(); }
+
+    function checkout() {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('receipt-date').textContent =
+        new Date().toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+      document.getElementById('receipt-items').innerHTML = cart.map(i =>
+        `<div class="receipt-row"><span>${i.name} × ${i.qty}</span><span>₹${i.price * i.qty}</span></div>`
+      ).join('');
+      document.getElementById('receipt-total').textContent = '₹' + total;
+      document.getElementById('order-id').textContent = 'Order ID: ST' + Date.now().toString().slice(-6);
+      document.getElementById('receipt-modal').classList.add('show');
+    }
+
+async function closeReceipt() {
+  try {
+    await fetch('http://127.0.0.1:5000/api/place-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service: 'store',
+        items: cart.map(i => ({ name: i.name, price: i.price * i.qty, qty: i.qty })),
+        total: cart.reduce((s, i) => s + i.price * i.qty, 0)
+      })
+    });
+  } catch(e) { console.log('Order save failed', e); }
+  document.getElementById('receipt-modal').classList.remove('show');
+  clearCart();
+}
+
+    function setCat(cat, el) {
+      activeCat = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderAll();
+    }
+
+    function filterItems() {
+      searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+      activeCat = 'all';
+      document.querySelectorAll('.cat-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+      renderAll();
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+
+    // init
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+    renderAll();
+  </script>
+</body>
+</html>

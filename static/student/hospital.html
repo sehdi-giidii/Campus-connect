@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#7f1d1d; --blob3:#0c4a6e; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#fecaca; --blob3:#bae6fd; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 60px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    /* status card */
+    .status-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:24px; padding:48px 40px; text-align:center; margin-bottom:24px; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .status-emoji { font-size:72px; margin-bottom:18px; display:block; }
+    .status-text  { font-family:'Syne',sans-serif; font-weight:800; font-size:30px; letter-spacing:-1px; margin-bottom:10px; }
+    .status-text.available   { color:#10b981; }
+    .status-text.unavailable { color:#f87171; }
+    .status-sub { font-size:14px; color:var(--muted); margin-bottom:24px; }
+
+    .status-banner { display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:30px; font-size:13px; font-weight:500; }
+    .status-banner.available   { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; }
+    .status-banner.unavailable { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.25);  color:#f87171; }
+    .status-dot { width:8px; height:8px; border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+    .available   .status-dot { background:#10b981; }
+    .unavailable .status-dot { background:#f87171; }
+
+    /* info cards */
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin-bottom:24px; animation:fadeUp 0.4s 0.2s ease both; opacity:0; }
+    .info-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:20px; text-align:center; }
+    .info-icon  { font-size:28px; margin-bottom:10px; display:block; }
+    .info-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+    .info-val   { font-size:14px; font-weight:500; color:var(--text); }
+
+    /* coming soon */
+    .coming-soon { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:20px; padding:28px; animation:fadeUp 0.4s 0.25s ease both; opacity:0; }
+    .coming-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .coming-badge { font-size:10px; background:rgba(251,191,36,0.15); color:#fbbf24; border:1px solid rgba(251,191,36,0.3); border-radius:20px; padding:2px 8px; }
+    .coming-sub   { font-size:12px; color:var(--muted); margin-bottom:20px; }
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; }
+    .feature-card { background:var(--glass); border:1px dashed var(--glass-border); border-radius:14px; padding:16px; text-align:center; opacity:0.6; }
+    .feature-icon { font-size:24px; margin-bottom:8px; display:block; }
+    .feature-name { font-size:12px; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .feature-desc { font-size:10px; color:var(--muted); }
+    .soon-tag { display:inline-block; font-size:9px; background:rgba(251,191,36,0.1); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); border-radius:20px; padding:1px 7px; margin-top:6px; }
+
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 60px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="canteen.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="store.html"><span class="nav-icon">🛒</span> Convenience Store</a>
+    <a class="nav-item" href="scooty.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <a class="nav-item active" href="hospital.html"><span class="nav-icon">🏥</span> Hospital</a>
+    <a class="nav-item" href="postoffice.html"><span class="nav-icon">📮</span> Post Office</a>
+    <a class="nav-item" href="bus.html"><span class="nav-icon">🚌</span> Bus Service</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🏥 Hospital</div>
+        <div class="page-sub">Check doctor availability and campus health services</div>
+      </div>
+    </div>
+
+    <!-- Status Card -->
+    <div class="status-card">
+      <span class="status-emoji" id="status-emoji">✅</span>
+      <div class="status-text available" id="status-text">Doctor Available</div>
+      <div class="status-sub" id="status-sub">A doctor is currently available at the campus hospital</div>
+      <div class="status-banner available" id="status-banner">
+        <div class="status-dot"></div>
+        <span id="banner-text">Available now — walk in anytime</span>
+      </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="info-grid">
+      <div class="info-card">
+        <span class="info-icon">📍</span>
+        <div class="info-label">Location</div>
+        <div class="info-val">Campus Health Centre, Block A</div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">⏰</span>
+        <div class="info-label">OPD Hours</div>
+        <div class="info-val">9:00 AM — 5:00 PM</div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">🚨</span>
+        <div class="info-label">Emergency</div>
+        <div class="info-val">24 × 7 Available</div>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">📞</span>
+        <div class="info-label">Contact</div>
+        <div class="info-val">+91 98765 43210</div>
+      </div>
+    </div>
+
+    <!-- Coming soon -->
+    <div class="coming-soon">
+      <div class="coming-title">More Features <span class="coming-badge">🚧 Coming Soon</span></div>
+      <div class="coming-sub">These features are under development and will be available soon</div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">📅</span>
+          <div class="feature-name">Appointment Booking</div>
+          <div class="feature-desc">Book a doctor's appointment online</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">💊</span>
+          <div class="feature-name">Medicine Availability</div>
+          <div class="feature-desc">Check available medicines at hospital</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🩺</span>
+          <div class="feature-name">Doctor Roster</div>
+          <div class="feature-desc">See which doctor is on duty today</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📋</span>
+          <div class="feature-name">Health Records</div>
+          <div class="feature-desc">Access your campus health history</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔔</span>
+          <div class="feature-name">Health Alerts</div>
+          <div class="feature-desc">Get notified about health advisories</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🧪</span>
+          <div class="feature-name">Lab Tests</div>
+          <div class="feature-desc">Book and track lab test results</div>
+          <span class="soon-tag">Coming soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // mock status — replace with real API later
+    // fetch('http://127.0.0.1:5000/api/services/status') and use data.hospital.doctor_available
+    const doctorAvailable = true;
+
+    function renderStatus(available) {
+      document.getElementById('status-emoji').textContent = available ? '✅' : '❌';
+      document.getElementById('status-text').textContent  = available ? 'Doctor Available' : 'Doctor Unavailable';
+      document.getElementById('status-text').className    = 'status-text ' + (available ? 'available' : 'unavailable');
+      document.getElementById('status-sub').textContent   = available
+        ? 'A doctor is currently available at the campus hospital'
+        : 'No doctor is available right now. Please check back later.';
+      document.getElementById('status-banner').className  = 'status-banner ' + (available ? 'available' : 'unavailable');
+      document.getElementById('banner-text').textContent  = available
+        ? 'Available now — walk in anytime'
+        : 'Unavailable — try again later or call emergency';
+    }
+
+    renderStatus(doctorAvailable);
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+  </script>
+</body>
+</html>

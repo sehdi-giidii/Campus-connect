@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)http://127.0.0.1:5000/provider/canteen_provider.html# -->
+<html lang="en" data-theme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen Provider — Campus Connect</title>
+  <link href="./Canteen Provider — Campus Connect_files/css2" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#7c2d12; --blob-opacity:0.28;
+      --input-bg:rgba(255,255,255,0.05); --input-border:rgba(255,255,255,0.1);
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#fed7aa; --blob-opacity:0.5;
+      --input-bg:rgba(255,255,255,0.8); --input-border:rgba(30,27,75,0.15);
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes slideIn  { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    /* ── sidebar ── */
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .provider-badge { display:inline-block; font-size:10px; background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.25); border-radius:20px; padding:2px 8px; margin-bottom:10px; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .provider-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .provider-role  { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    /* ── main ── */
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 60px; }
+
+    /* top bar */
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; animation:fadeUp 0.4s 0.1s ease both; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    /* open/close toggle */
+    .status-control { display:flex; align-items:center; gap:14px; padding:14px 20px; border-radius:16px; background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); margin-bottom:28px; animation:fadeUp 0.4s 0.15s ease both; }
+    .status-control-label { font-size:13px; color:var(--muted); flex:1; }
+    .status-control-label strong { color:var(--text); display:block; font-size:14px; margin-bottom:2px; }
+    .big-toggle { display:flex; gap:8px; }
+    .big-toggle-btn { padding:9px 20px; border-radius:10px; font-size:13px; font-weight:500; border:1px solid var(--glass-border); background:var(--glass); color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .big-toggle-btn.open-active  { background:rgba(16,185,129,0.15); color:#10b981; border-color:rgba(16,185,129,0.3); }
+    .big-toggle-btn.close-active { background:rgba(239,68,68,0.15);  color:#f87171; border-color:rgba(239,68,68,0.3); }
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; animation:floatDot 2s ease-in-out infinite; }
+    .dot-open   { background:#10b981; }
+    .dot-closed { background:#f87171; }
+
+    /* stats row */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; animation:fadeUp 0.4s 0.2s ease both; }
+    .stat-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:16px 18px; }
+    .stat-val  { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:#f97316; }
+    .stat-label{ font-size:11px; color:var(--muted); margin-top:3px; }
+
+    /* tabs */
+    .tabs { display:flex; gap:6px; margin-bottom:22px; animation:fadeUp 0.4s 0.25s ease both; }
+    .tab-btn { padding:9px 18px; border-radius:10px; font-size:13px; font-weight:500; border:1px solid var(--glass-border); background:var(--glass); color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .tab-btn.active { background:rgba(249,115,22,0.15); color:#f97316; border-color:rgba(249,115,22,0.3); }
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; animation:fadeUp 0.35s ease both; }
+
+    /* section header */
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; display:flex; align-items:center; gap:8px; }
+    .section-count { font-size:11px; font-weight:400; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); padding:2px 8px; border-radius:20px; }
+    .add-item-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; border-radius:10px; font-size:13px; font-weight:500; background:#f97316; color:#fff; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity 0.2s; }
+    .add-item-btn:hover { opacity:0.88; }
+
+    /* item grid */
+    .item-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-bottom:32px; }
+    .item-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; overflow:hidden; transition:transform 0.2s,border-color 0.2s; }
+    .item-card:hover { transform:translateY(-3px); border-color:rgba(249,115,22,0.25); }
+    .item-card.unavailable { opacity:0.55; }
+
+    .item-img { width:100%; height:110px; overflow:hidden; border-bottom:1px solid var(--glass-border); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; position:relative; }
+    .item-img img { width:100%; height:100%; object-fit:cover; }
+    .img-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .ph-icon { font-size:24px; opacity:0.2; }
+    .ph-text { font-size:10px; color:var(--muted); opacity:0.5; }
+
+    .item-body { padding:12px 14px; }
+    .item-name { font-size:13px; font-weight:500; color:var(--text); margin-bottom:6px; }
+    .item-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .item-price { font-size:14px; color:#f97316; font-weight:500; }
+    .item-cat { font-size:10px; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); padding:2px 7px; border-radius:20px; }
+
+    .item-actions { display:flex; gap:6px; }
+    .avail-toggle { flex:1; padding:7px; border-radius:8px; font-size:11px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; border:1px solid; }
+    .avail-on  { background:rgba(16,185,129,0.1);  color:#10b981; border-color:rgba(16,185,129,0.25); }
+    .avail-off { background:rgba(239,68,68,0.1);   color:#f87171; border-color:rgba(239,68,68,0.25); }
+    .edit-btn-sm { padding:7px 10px; border-radius:8px; font-size:11px; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .edit-btn-sm:hover { background:rgba(249,115,22,0.1); color:#f97316; border-color:rgba(249,115,22,0.2); }
+    .del-btn-sm { padding:7px 10px; border-radius:8px; font-size:11px; background:rgba(239,68,68,0.07); color:#f87171; border:1px solid rgba(239,68,68,0.15); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .del-btn-sm:hover { background:rgba(239,68,68,0.15); }
+
+    /* orders tab */
+    .orders-list { display:flex; flex-direction:column; gap:12px; }
+    .order-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:18px 20px; display:flex; align-items:flex-start; gap:16px; transition:border-color 0.2s; }
+    .order-card:hover { border-color:rgba(249,115,22,0.2); }
+    .order-id-badge { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:#f97316; background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.2); border-radius:8px; padding:4px 10px; white-space:nowrap; }
+    .order-info { flex:1; }
+    .order-student { font-size:13px; font-weight:500; color:var(--text); margin-bottom:4px; }
+    .order-items-text { font-size:12px; color:var(--muted); margin-bottom:8px; }
+    .order-total { font-size:13px; color:#f97316; font-weight:500; }
+    .order-time { font-size:11px; color:var(--muted); }
+    .order-status-btns { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+    .status-badge { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:500; }
+    .badge-pending  { background:rgba(251,191,36,0.1);  color:#fbbf24; border:1px solid rgba(251,191,36,0.2); }
+    .badge-ready    { background:rgba(16,185,129,0.1);  color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+    .badge-done     { background:rgba(100,116,139,0.1); color:#94a3b8; border:1px solid rgba(100,116,139,0.2); }
+    .mark-ready-btn { padding:7px 14px; border-radius:8px; font-size:11px; font-weight:500; background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.25); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .mark-ready-btn:hover { background:rgba(16,185,129,0.22); }
+    .mark-done-btn  { padding:7px 14px; border-radius:8px; font-size:11px; font-weight:500; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+
+    /* empty state */
+    .empty-state { text-align:center; padding:48px 24px; color:var(--muted); }
+    .empty-icon  { font-size:36px; margin-bottom:12px; opacity:0.3; }
+    .empty-text  { font-size:13px; }
+
+    /* ── modal ── */
+    .modal-overlay { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--sidebar-bg); backdrop-filter:blur(28px); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; animation:slideIn 0.3s ease; }
+    .modal-title { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; margin-bottom:20px; color:var(--text); }
+
+    .form-group { margin-bottom:16px; }
+    .form-label { font-size:12px; color:var(--muted); margin-bottom:6px; display:block; letter-spacing:0.04em; text-transform:uppercase; }
+    .form-input, .form-select { width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; }
+    .form-input:focus, .form-select:focus { border-color:rgba(249,115,22,0.4); }
+    .form-select option { background:var(--bg); color:var(--text); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .avail-check { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); cursor:pointer; }
+    .avail-check input { accent-color:#f97316; width:16px; height:16px; cursor:pointer; }
+    .avail-check span { font-size:13px; color:var(--text); }
+
+    /* image upload */
+    .img-upload-area { border:2px dashed var(--glass-border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative; overflow:hidden; }
+    .img-upload-area:hover { border-color:rgba(249,115,22,0.4); }
+    .img-upload-area input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .upload-icon { font-size:28px; margin-bottom:8px; opacity:0.4; }
+    .upload-text { font-size:12px; color:var(--muted); }
+    .upload-preview { width:100%; height:120px; object-fit:cover; border-radius:8px; display:none; }
+
+    .modal-btns { display:flex; gap:10px; margin-top:24px; }
+    .save-btn  { flex:1; padding:11px; background:#f97316; color:#fff; border:none; border-radius:12px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity 0.2s; }
+    .save-btn:hover { opacity:0.88; }
+    .cancel-btn { flex:1; padding:11px; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); border-radius:12px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+    /* confirm delete modal */
+    .confirm-text { font-size:14px; color:var(--muted); margin-bottom:20px; line-height:1.6; }
+    .del-confirm-btn { flex:1; padding:11px; background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); border-radius:12px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .del-confirm-btn:hover { background:rgba(239,68,68,0.25); }
+
+    /* toast */
+    .toast { position:fixed; bottom:28px; right:28px; z-index:50; padding:12px 20px; border-radius:12px; font-size:13px; font-weight:500; backdrop-filter:blur(20px); border:1px solid var(--glass-border); transform:translateY(80px); opacity:0; transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success { background:rgba(16,185,129,0.15); color:#10b981; border-color:rgba(16,185,129,0.3); }
+    .toast.error   { background:rgba(239,68,68,0.15);   color:#f87171; border-color:rgba(239,68,68,0.3); }
+    .toast.info    { background:rgba(249,115,22,0.15);  color:#f97316; border-color:rgba(249,115,22,0.3); }
+
+    @media (max-width:900px) { .stats-row{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 60px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <!-- sidebar -->
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="provider-badge">⚙️ Provider Panel</div>
+    <div class="avatar">👨‍🍳</div>
+    <div class="provider-name" id="provider-name">karan</div>
+    <div class="provider-role">Canteen Manager</div>
+    <div class="divider"></div>
+    <div class="nav-label">Manage</div>
+    <a class="nav-item active" href="http://127.0.0.1:5000/provider/canteen_provider.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="http://127.0.0.1:5000/provider/store_provider.html"><span class="nav-icon">🛒</span> Store</a>
+    <a class="nav-item" href="http://127.0.0.1:5000/provider/scooty_provider.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="http://127.0.0.1:5000/provider/canteen_provider.html#"><span class="nav-icon">👤</span> My Profile</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div class="main">
+    <!-- top bar -->
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🍽 Canteen Dashboard</div>
+        <div class="page-sub">Manage your menu, availability and incoming orders</div>
+      </div>
+    </div>
+
+    <!-- open/close control -->
+    <div class="status-control">
+      <div class="status-control-label">
+        <strong>Canteen Status</strong>
+        <span id="status-text"><span class="status-dot dot-open"></span>Currently Open — accepting student orders</span>
+      </div>
+      <div class="big-toggle">
+        <button class="big-toggle-btn open-active" id="btn-open" onclick="setCanteenStatus(&#39;open&#39;)">✅ Open</button>
+        <button class="big-toggle-btn" id="btn-close" onclick="setCanteenStatus(&#39;closed&#39;)">🔴 Close</button>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="stat-total">20</div><div class="stat-label">Total Items</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-avail">19</div><div class="stat-label">Available</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-orders">4</div><div class="stat-label">Active Orders</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-today">₹1,240</div><div class="stat-label">Today's Revenue</div></div>
+    </div>
+
+    <!-- tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab(&#39;menu&#39;)">🍴 Menu Items</button>
+      <button class="tab-btn" onclick="switchTab(&#39;orders&#39;)">📋 Orders</button>
+    </div>
+
+    <!-- MENU TAB -->
+    <div class="tab-panel active" id="tab-menu">
+      <div class="section-header">
+        <div class="section-title">Fresh Food <span class="section-count" id="fresh-count">14 items</span></div>
+        <button class="add-item-btn" onclick="openAddModal(&#39;fresh&#39;)">＋ Add Item</button>
+      </div>
+      <div class="item-grid" id="fresh-grid">
+          <div class="item-card " id="card-1">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/chowmein.jpg" alt="Veg Chowmein" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Veg Chowmein</div>
+              <div class="item-meta">
+                <div class="item-price">₹70 / ₹140</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(1, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(1, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(1, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-2">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/chowmein.jpg" alt="Chicken Chowmein" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Chicken Chowmein</div>
+              <div class="item-meta">
+                <div class="item-price">₹80 / ₹160</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(2, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(2, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(2, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-3">
+            <div class="item-img"><div class="img-placeholder"><div class="ph-icon">📷</div></div></div>
+            <div class="item-body">
+              <div class="item-name">Veg Fried Rice</div>
+              <div class="item-meta">
+                <div class="item-price">₹70 / ₹140</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(3, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(3, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(3, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-4">
+            <div class="item-img"><div class="img-placeholder"><div class="ph-icon">📷</div></div></div>
+            <div class="item-body">
+              <div class="item-name">Chicken Fried Rice</div>
+              <div class="item-meta">
+                <div class="item-price">₹80 / ₹160</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(4, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(4, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(4, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-5">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/Veg_thuppa.jpg" alt="Veg Thuppa" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Veg Thuppa</div>
+              <div class="item-meta">
+                <div class="item-price">₹80 / ₹160</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(5, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(5, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(5, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-6">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/chicken_thuppa.webp" alt="Chicken Thuppa" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Chicken Thuppa</div>
+              <div class="item-meta">
+                <div class="item-price">₹90 / ₹180</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(6, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(6, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(6, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-7">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/boiled_vegetable_masala_maggie.jpg" alt="Boiled Maggi" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Boiled Maggi</div>
+              <div class="item-meta">
+                <div class="item-price">₹40 / ₹80</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(7, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(7, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(7, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-8">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/Fried_maggie.webp" alt="Fried Maggi" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Fried Maggi</div>
+              <div class="item-meta">
+                <div class="item-price">₹60 / ₹120</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(8, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(8, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(8, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-9">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/steamed_momo.jpg" alt="Steamed Momo" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Steamed Momo</div>
+              <div class="item-meta">
+                <div class="item-price">₹70 / ₹140</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(9, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(9, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(9, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-10">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/fried_momo.jpg" alt="Fried Momo" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Fried Momo</div>
+              <div class="item-meta">
+                <div class="item-price">₹80 / ₹160</div>
+                <div class="item-cat">Half/Full</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(10, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(10, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(10, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-11">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/vegetable_roll.jpg" alt="Veg Roll" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Veg Roll</div>
+              <div class="item-meta">
+                <div class="item-price">₹50</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(11, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(11, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(11, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-12">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/chicken_roll.jpg" alt="Chicken Roll" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Chicken Roll</div>
+              <div class="item-meta">
+                <div class="item-price">₹70</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(12, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(12, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(12, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-13">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/samosa.jpg" alt="Samosa" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Samosa</div>
+              <div class="item-meta">
+                <div class="item-price">₹10</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(13, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(13, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(13, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-14">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/omlette.jpg" alt="Omelette" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Omelette</div>
+              <div class="item-meta">
+                <div class="item-price">₹15</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(14, &#39;fresh&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(14, &#39;fresh&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(14, &#39;fresh&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <div class="section-header">
+        <div class="section-title">Packaged Items <span class="section-count" id="pkg-count">6 items</span></div>
+        <button class="add-item-btn" onclick="openAddModal(&#39;packaged&#39;)">＋ Add Item</button>
+      </div>
+      <div class="item-grid" id="pkg-grid">
+          <div class="item-card " id="card-15">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/biscuits.webp" alt="Biscuits" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Biscuits</div>
+              <div class="item-meta">
+                <div class="item-price">₹20</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(15, &#39;pkg&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(15, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(15, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-16">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/chips.png" alt="Chips" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Chips</div>
+              <div class="item-meta">
+                <div class="item-price">₹25</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(16, &#39;pkg&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(16, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(16, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-17">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/cold_drinks.jpg" alt="Cold Drink" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Cold Drink</div>
+              <div class="item-meta">
+                <div class="item-price">₹30</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(17, &#39;pkg&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(17, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(17, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card unavailable" id="card-18">
+            <div class="item-img"><div class="img-placeholder"><div class="ph-icon">📷</div></div></div>
+            <div class="item-body">
+              <div class="item-name">Juice</div>
+              <div class="item-meta">
+                <div class="item-price">₹25</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-off" onclick="toggleAvail(18, &#39;pkg&#39;)">
+                  ❌ Unavail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(18, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(18, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-19">
+            <div class="item-img"><div class="img-placeholder"><div class="ph-icon">📷</div></div></div>
+            <div class="item-body">
+              <div class="item-name">Chocolate</div>
+              <div class="item-meta">
+                <div class="item-price">₹40</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(19, &#39;pkg&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(19, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(19, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        
+          <div class="item-card " id="card-20">
+            <div class="item-img"><img src="./Canteen Provider — Campus Connect_files/instant_noodles.png" alt="Instant Noodles" onerror="this.parentElement.innerHTML=&#39;&lt;div class=img-placeholder&gt;&lt;div class=ph-icon&gt;📷&lt;/div&gt;&lt;/div&gt;&#39;"></div>
+            <div class="item-body">
+              <div class="item-name">Instant Noodles</div>
+              <div class="item-meta">
+                <div class="item-price">₹25</div>
+                <div class="item-cat">Single</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle avail-on" onclick="toggleAvail(20, &#39;pkg&#39;)">
+                  ✅ Avail
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(20, &#39;pkg&#39;)">✏️</button>
+                <button class="del-btn-sm" onclick="openDelModal(20, &#39;pkg&#39;)">🗑</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="section-header">
+        <div class="section-title">Incoming Orders <span class="section-count" id="orders-count">4 active</span></div>
+      </div>
+      <div class="orders-list" id="orders-list">
+          <div class="order-card" id="order-CC241801">
+            <div class="order-id-badge">CC241801</div>
+            <div class="order-info">
+              <div class="order-student">Rahul Sharma <span style="color:var(--muted);font-size:11px">(CS25B001)</span></div>
+              <div class="order-items-text">Veg Chowmein (half) × 1, Samosa × 2</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹90</div>
+                <div class="order-time">2 min ago</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge badge-pending">
+                ⏳ Pending
+              </span>
+              <button class="mark-ready-btn" onclick="markReady(&#39;CC241801&#39;)">Mark Ready</button>
+              
+            </div>
+          </div>
+        
+          <div class="order-card" id="order-CC241802">
+            <div class="order-id-badge">CC241802</div>
+            <div class="order-info">
+              <div class="order-student">Priya Das <span style="color:var(--muted);font-size:11px">(CS25B042)</span></div>
+              <div class="order-items-text">Chicken Thuppa (full) × 1, Cold Drink × 1</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹210</div>
+                <div class="order-time">5 min ago</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge badge-ready">
+                ✅ Ready
+              </span>
+              
+              <button class="mark-done-btn" onclick="markDone(&#39;CC241802&#39;)">Mark Done</button>
+            </div>
+          </div>
+        
+          <div class="order-card" id="order-CC241803">
+            <div class="order-id-badge">CC241803</div>
+            <div class="order-info">
+              <div class="order-student">Arjun Mehta <span style="color:var(--muted);font-size:11px">(ME25B011)</span></div>
+              <div class="order-items-text">Fried Momo (half) × 2, Biscuits × 1</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹180</div>
+                <div class="order-time">8 min ago</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge badge-pending">
+                ⏳ Pending
+              </span>
+              <button class="mark-ready-btn" onclick="markReady(&#39;CC241803&#39;)">Mark Ready</button>
+              
+            </div>
+          </div>
+        
+          <div class="order-card" id="order-CC241804">
+            <div class="order-id-badge">CC241804</div>
+            <div class="order-info">
+              <div class="order-student">Sneha Patel <span style="color:var(--muted);font-size:11px">(EC25B033)</span></div>
+              <div class="order-items-text">Veg Roll × 1, Chips × 1</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹75</div>
+                <div class="order-time">12 min ago</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge badge-done">
+                ✔ Done
+              </span>
+              
+              
+            </div>
+          </div>
+        
+          <div class="order-card" id="order-CC241805">
+            <div class="order-id-badge">CC241805</div>
+            <div class="order-info">
+              <div class="order-student">Kiran Mondal <span style="color:var(--muted);font-size:11px">(CS25B077)</span></div>
+              <div class="order-items-text">Chicken Fried Rice (half) × 1</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹80</div>
+                <div class="order-time">15 min ago</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge badge-pending">
+                ⏳ Pending
+              </span>
+              <button class="mark-ready-btn" onclick="markReady(&#39;CC241805&#39;)">Mark Ready</button>
+              
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Item Modal -->
+  <div class="modal-overlay" id="item-modal">
+    <div class="modal">
+      <div class="modal-title" id="modal-title">Add New Item</div>
+
+      <div class="form-group">
+        <label class="form-label">Item Name</label>
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. Veg Chowmein">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Half Plate Price (₹)</label>
+          <input class="form-input" id="f-price" type="number" placeholder="70">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="f-cat">
+            <option value="fresh">Fresh Food</option>
+            <option value="packaged">Packaged</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Plate Option</label>
+        <select class="form-select" id="f-plate">
+          <option value="false">Half / Full plate</option>
+          <option value="true">Single price only</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Availability</label>
+        <label class="avail-check">
+          <input type="checkbox" id="f-avail" checked="">
+          <span>Mark as Available</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Item Image</label>
+        <div class="img-upload-area" onclick="document.getElementById(&#39;f-img&#39;).click()">
+          <input type="file" id="f-img" accept="image/*" style="display:none" onchange="previewImg(event)">
+          <img class="upload-preview" id="img-preview">
+          <div id="upload-placeholder">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Click to upload image</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="save-btn" onclick="saveItem()">Save Item</button>
+        <button class="cancel-btn" onclick="closeModal(&#39;item-modal&#39;)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="del-modal">
+    <div class="modal">
+      <div class="modal-title">🗑 Delete Item</div>
+      <div class="confirm-text">Are you sure you want to delete <strong id="del-name"></strong>? This cannot be undone.</div>
+      <div class="modal-btns">
+        <button class="del-confirm-btn" onclick="confirmDelete()">Yes, Delete</button>
+        <button class="cancel-btn" onclick="closeModal(&#39;del-modal&#39;)">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast success" id="toast">Canteen is now Open ✅</div>
+
+  <script>
+    const IMG = '/static/student/images/canteen/';
+
+    // ── DATA ──
+    let freshItems = [
+      { id:1,  name:'Veg Chowmein',       half:70,  available:true,  noPlate:false, img:'chowmein.jpg' },
+      { id:2,  name:'Chicken Chowmein',   half:80,  available:true,  noPlate:false, img:'chowmein.jpg' },
+      { id:3,  name:'Veg Fried Rice',     half:70,  available:true,  noPlate:false, img:null },
+      { id:4,  name:'Chicken Fried Rice', half:80,  available:true,  noPlate:false, img:null },
+      { id:5,  name:'Veg Thuppa',         half:80,  available:true,  noPlate:false, img:'Veg_thuppa.jpg' },
+      { id:6,  name:'Chicken Thuppa',     half:90,  available:true,  noPlate:false, img:'chicken_thuppa.webp' },
+      { id:7,  name:'Boiled Maggi',       half:40,  available:true,  noPlate:false, img:'boiled_vegetable_masala_maggie.jpg' },
+      { id:8,  name:'Fried Maggi',        half:60,  available:true,  noPlate:false, img:'Fried_maggie.webp' },
+      { id:9,  name:'Steamed Momo',       half:70,  available:true,  noPlate:false, img:'steamed_momo.jpg' },
+      { id:10, name:'Fried Momo',         half:80,  available:true,  noPlate:false, img:'fried_momo.jpg' },
+      { id:11, name:'Veg Roll',           half:50,  available:true,  noPlate:true,  img:'vegetable_roll.jpg' },
+      { id:12, name:'Chicken Roll',       half:70,  available:true,  noPlate:true,  img:'chicken_roll.jpg' },
+      { id:13, name:'Samosa',             half:10,  available:true,  noPlate:true,  img:'samosa.jpg' },
+      { id:14, name:'Omelette',           half:15,  available:true,  noPlate:true,  img:'omlette.jpg' },
+    ];
+
+    let pkgItems = [
+      { id:15, name:'Biscuits',        half:20, available:true,  noPlate:true, img:'biscuits.webp' },
+      { id:16, name:'Chips',           half:25, available:true,  noPlate:true, img:'chips.png' },
+      { id:17, name:'Cold Drink',      half:30, available:true,  noPlate:true, img:'cold_drinks.jpg' },
+      { id:18, name:'Juice',           half:25, available:false, noPlate:true, img:null },
+      { id:19, name:'Chocolate',       half:40, available:true,  noPlate:true, img:null },
+      { id:20, name:'Instant Noodles', half:25, available:true,  noPlate:true, img:'instant_noodles.png' },
+    ];
+
+    let orders = [
+      { id:'CC241801', student:'Rahul Sharma',  roll:'CS25B001', items:'Veg Chowmein (half) × 1, Samosa × 2', total:90,  time:'2 min ago',  status:'pending' },
+      { id:'CC241802', student:'Priya Das',     roll:'CS25B042', items:'Chicken Thuppa (full) × 1, Cold Drink × 1', total:210, time:'5 min ago',  status:'ready' },
+      { id:'CC241803', student:'Arjun Mehta',   roll:'ME25B011', items:'Fried Momo (half) × 2, Biscuits × 1', total:180, time:'8 min ago',  status:'pending' },
+      { id:'CC241804', student:'Sneha Patel',   roll:'EC25B033', items:'Veg Roll × 1, Chips × 1', total:75,  time:'12 min ago', status:'done' },
+      { id:'CC241805', student:'Kiran Mondal',  roll:'CS25B077', items:'Chicken Fried Rice (half) × 1', total:80,  time:'15 min ago', status:'pending' },
+    ];
+
+    let nextId = 21;
+    let editingId = null;
+    let deletingId = null;
+    let editingList = null;
+    let canteenOpen = true;
+
+    // ── RENDER ──
+    function imgHtml(item) {
+      if (item.img) {
+        return `<img src="${IMG}${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div class=img-placeholder><div class=ph-icon>📷</div></div>'"/>`;
+      }
+      return `<div class="img-placeholder"><div class="ph-icon">📷</div></div>`;
+    }
+
+    function renderItems(items, gridId, listRef) {
+      document.getElementById(gridId).innerHTML = items.length === 0
+        ? `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No items yet. Add your first item!</div></div>`
+        : items.map(item => `
+          <div class="item-card ${item.available ? '' : 'unavailable'}" id="card-${item.id}">
+            <div class="item-img">${imgHtml(item)}</div>
+            <div class="item-body">
+              <div class="item-name">${item.name}</div>
+              <div class="item-meta">
+                <div class="item-price">₹${item.half}${!item.noPlate ? ' / ₹'+(item.half*2) : ''}</div>
+                <div class="item-cat">${item.noPlate ? 'Single' : 'Half/Full'}</div>
+              </div>
+              <div class="item-actions">
+                <button class="avail-toggle ${item.available ? 'avail-on' : 'avail-off'}"
+                  onclick="toggleAvail(${item.id}, '${listRef}')">
+                  ${item.available ? '✅ Avail' : '❌ Unavail'}
+                </button>
+                <button class="edit-btn-sm" onclick="openEditModal(${item.id}, '${listRef}')">✏️</button>
+                <button class="del-btn-sm"  onclick="openDelModal(${item.id}, '${listRef}')">🗑</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function renderOrders() {
+      const list = document.getElementById('orders-list');
+      const active = orders.filter(o => o.status !== 'done');
+      document.getElementById('orders-count').textContent = active.length + ' active';
+      document.getElementById('stat-orders').textContent = active.length;
+      list.innerHTML = orders.length === 0
+        ? `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">No orders yet.</div></div>`
+        : orders.map(o => `
+          <div class="order-card" id="order-${o.id}">
+            <div class="order-id-badge">${o.id}</div>
+            <div class="order-info">
+              <div class="order-student">${o.student} <span style="color:var(--muted);font-size:11px">(${o.roll})</span></div>
+              <div class="order-items-text">${o.items}</div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="order-total">₹${o.total}</div>
+                <div class="order-time">${o.time}</div>
+              </div>
+            </div>
+            <div class="order-status-btns">
+              <span class="status-badge ${o.status === 'pending' ? 'badge-pending' : o.status === 'ready' ? 'badge-ready' : 'badge-done'}">
+                ${o.status === 'pending' ? '⏳ Pending' : o.status === 'ready' ? '✅ Ready' : '✔ Done'}
+              </span>
+              ${o.status === 'pending' ? `<button class="mark-ready-btn" onclick="markReady('${o.id}')">Mark Ready</button>` : ''}
+              ${o.status === 'ready'   ? `<button class="mark-done-btn"  onclick="markDone('${o.id}')">Mark Done</button>` : ''}
+            </div>
+          </div>
+        `).join('');
+    }
+
+    function updateStats() {
+      const all = [...freshItems, ...pkgItems];
+      document.getElementById('stat-total').textContent = all.length;
+      document.getElementById('stat-avail').textContent = all.filter(i => i.available).length;
+      document.getElementById('fresh-count').textContent = freshItems.length + ' items';
+      document.getElementById('pkg-count').textContent   = pkgItems.length + ' items';
+    }
+
+    // ── CANTEEN STATUS ──
+    function setCanteenStatus(status) {
+      canteenOpen = status === 'open';
+      document.getElementById('btn-open').className  = 'big-toggle-btn' + (canteenOpen ? ' open-active' : '');
+      document.getElementById('btn-close').className = 'big-toggle-btn' + (!canteenOpen ? ' close-active' : '');
+      document.getElementById('status-text').innerHTML = canteenOpen
+        ? `<span class="status-dot dot-open"></span>Currently Open — accepting student orders`
+        : `<span class="status-dot dot-closed"></span>Currently Closed — not accepting orders`;
+      showToast(canteenOpen ? 'Canteen is now Open ✅' : 'Canteen is now Closed 🔴', canteenOpen ? 'success' : 'error');
+      // TODO: send to Flask → fetch('/api/canteen/status', { method:'POST', body: JSON.stringify({open: canteenOpen}) })
+    }
+
+    // ── AVAILABILITY ──
+    function toggleAvail(id, listRef) {
+      const list = listRef === 'fresh' ? freshItems : pkgItems;
+      const item = list.find(i => i.id === id);
+      item.available = !item.available;
+      renderItems(freshItems, 'fresh-grid', 'fresh');
+      renderItems(pkgItems,   'pkg-grid',   'pkg');
+      updateStats();
+      showToast(`${item.name} marked as ${item.available ? 'Available' : 'Unavailable'}`, item.available ? 'success' : 'info');
+      // TODO: sync with Flask
+    }
+
+    // ── ORDER ACTIONS ──
+    function markReady(id) {
+      orders.find(o => o.id === id).status = 'ready';
+      renderOrders();
+      showToast('Order ' + id + ' marked as Ready ✅', 'success');
+    }
+    function markDone(id) {
+      orders.find(o => o.id === id).status = 'done';
+      renderOrders();
+      showToast('Order ' + id + ' completed ✔', 'info');
+    }
+
+    // ── TABS ──
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i===0&&tab==='menu') || (i===1&&tab==='orders')));
+      document.getElementById('tab-menu').classList.toggle('active', tab === 'menu');
+      document.getElementById('tab-orders').classList.toggle('active', tab === 'orders');
+    }
+
+    // ── ADD / EDIT MODAL ──
+    let modalCat = 'fresh';
+
+    function openAddModal(cat) {
+      editingId = null;
+      modalCat  = cat;
+      document.getElementById('modal-title').textContent = 'Add New Item';
+      document.getElementById('f-name').value   = '';
+      document.getElementById('f-price').value  = '';
+      document.getElementById('f-cat').value    = cat;
+      document.getElementById('f-plate').value  = 'false';
+      document.getElementById('f-avail').checked = true;
+      document.getElementById('img-preview').style.display = 'none';
+      document.getElementById('upload-placeholder').style.display = 'block';
+      document.getElementById('item-modal').classList.add('show');
+    }
+
+    function openEditModal(id, listRef) {
+      const list = listRef === 'fresh' ? freshItems : pkgItems;
+      const item = list.find(i => i.id === id);
+      editingId   = id;
+      editingList = listRef;
+      document.getElementById('modal-title').textContent = 'Edit Item';
+      document.getElementById('f-name').value   = item.name;
+      document.getElementById('f-price').value  = item.half;
+      document.getElementById('f-cat').value    = listRef === 'fresh' ? 'fresh' : 'packaged';
+      document.getElementById('f-plate').value  = item.noPlate ? 'true' : 'false';
+      document.getElementById('f-avail').checked = item.available;
+      if (item.img) {
+        document.getElementById('img-preview').src = IMG + item.img;
+        document.getElementById('img-preview').style.display = 'block';
+        document.getElementById('upload-placeholder').style.display = 'none';
+      } else {
+        document.getElementById('img-preview').style.display = 'none';
+        document.getElementById('upload-placeholder').style.display = 'block';
+      }
+      document.getElementById('item-modal').classList.add('show');
+    }
+
+    function previewImg(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('img-preview').src = ev.target.result;
+        document.getElementById('img-preview').style.display = 'block';
+        document.getElementById('upload-placeholder').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveItem() {
+      const name   = document.getElementById('f-name').value.trim();
+      const price  = parseInt(document.getElementById('f-price').value);
+      const cat    = document.getElementById('f-cat').value;
+      const noPlate= document.getElementById('f-plate').value === 'true';
+      const avail  = document.getElementById('f-avail').checked;
+
+      if (!name || !price) { showToast('Please fill in name and price', 'error'); return; }
+
+      const targetList = cat === 'fresh' ? freshItems : pkgItems;
+
+      if (editingId !== null) {
+        // edit
+        const srcList = editingList === 'fresh' ? freshItems : pkgItems;
+        const item = srcList.find(i => i.id === editingId);
+        // if category changed, move item
+        if ((editingList === 'fresh' && cat === 'packaged') || (editingList === 'pkg' && cat === 'fresh')) {
+          srcList.splice(srcList.indexOf(item), 1);
+          targetList.push({ ...item, name, half:price, noPlate, available:avail });
+        } else {
+          item.name = name; item.half = price; item.noPlate = noPlate; item.available = avail;
+        }
+        showToast('Item updated ✅', 'success');
+      } else {
+        // add
+        targetList.push({ id: nextId++, name, half: price, available: avail, noPlate, img: null });
+        showToast('Item added ✅', 'success');
+      }
+
+      closeModal('item-modal');
+      renderItems(freshItems, 'fresh-grid', 'fresh');
+      renderItems(pkgItems,   'pkg-grid',   'pkg');
+      updateStats();
+      // TODO: sync with Flask
+    }
+
+    // ── DELETE ──
+    function openDelModal(id, listRef) {
+      const list = listRef === 'fresh' ? freshItems : pkgItems;
+      const item = list.find(i => i.id === id);
+      deletingId   = { id, listRef };
+      document.getElementById('del-name').textContent = item.name;
+      document.getElementById('del-modal').classList.add('show');
+    }
+
+    function confirmDelete() {
+      const { id, listRef } = deletingId;
+      if (listRef === 'fresh') freshItems = freshItems.filter(i => i.id !== id);
+      else                     pkgItems   = pkgItems.filter(i => i.id !== id);
+      closeModal('del-modal');
+      renderItems(freshItems, 'fresh-grid', 'fresh');
+      renderItems(pkgItems,   'pkg-grid',   'pkg');
+      updateStats();
+      showToast('Item deleted', 'error');
+      // TODO: sync with Flask
+    }
+
+    // ── UTILS ──
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type + ' show';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('provider_name');
+      window.location.href = '../index.html';
+    }
+
+    // close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(o => {
+      o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+    });
+
+    // ── INIT ──
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('provider-name').textContent = localStorage.getItem('provider_name') || 'Provider';
+    renderItems(freshItems, 'fresh-grid', 'fresh');
+    renderItems(pkgItems,   'pkg-grid',   'pkg');
+    renderOrders();
+    updateStats();
+  </script>
+
+</body></html>

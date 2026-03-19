@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Canteen — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#7c2d12; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#fed7aa; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    /* ── sidebar ── */
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll  { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    [data-theme="light"] .nav-item.active { color:#c2410c; }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    /* ── main ── */
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 120px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; color:var(--text); }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    .status-banner { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px; margin-bottom:24px; font-size:13px; font-weight:500; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .status-banner.open   { background:rgba(16,185,129,0.1);  border:1px solid rgba(16,185,129,0.2); color:#10b981; }
+    .status-banner.closed { background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.2);  color:#f87171; }
+    .status-dot { width:8px; height:8px; border-radius:50%; animation:floatDot 2s ease-in-out infinite; }
+    .open   .status-dot { background:#10b981; }
+    .closed .status-dot { background:#f87171; }
+
+    .section { margin-bottom:32px; animation:fadeUp 0.5s 0.2s ease both; opacity:0; }
+    .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:var(--text); }
+    .section-count { font-size:11px; font-weight:400; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); padding:2px 8px; border-radius:20px; }
+
+    .item-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+
+    .item-card { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; overflow:hidden; transition:transform 0.2s,border-color 0.2s; }
+    .item-card:hover { transform:translateY(-3px); border-color:rgba(249,115,22,0.25); }
+    .item-card.unavailable { opacity:0.4; }
+
+    /* image */
+    .item-img { width:100%; height:110px; overflow:hidden; border-bottom:1px solid var(--glass-border); background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; }
+    .item-img img { width:100%; height:100%; object-fit:cover; }
+    .img-placeholder { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .ph-icon { font-size:24px; opacity:0.2; }
+    .ph-text { font-size:10px; color:var(--muted); opacity:0.5; text-align:center; padding:0 8px; }
+
+    .item-body { padding:12px 14px; }
+    .item-name { font-size:13px; font-weight:500; color:var(--text); margin-bottom:6px; }
+    .item-avail { font-size:10px; padding:2px 8px; border-radius:20px; margin-bottom:8px; display:inline-block; }
+    .avail-yes { background:rgba(16,185,129,0.1);  color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+    .avail-no  { background:rgba(239,68,68,0.1);   color:#f87171; border:1px solid rgba(239,68,68,0.2); }
+
+    .plate-toggle { display:flex; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:8px; padding:2px; margin-bottom:8px; }
+    .plate-btn { flex:1; padding:5px 4px; font-size:11px; border:none; background:transparent; color:var(--muted); cursor:pointer; border-radius:6px; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+    .plate-btn.active { background:rgba(249,115,22,0.18); color:#f97316; font-weight:500; }
+
+    .item-price { font-size:14px; color:#f97316; font-weight:500; margin-bottom:10px; }
+    .add-btn { width:100%; padding:7px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.25); border-radius:8px; font-size:12px; font-weight:500; color:#f97316; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .add-btn:hover { background:rgba(249,115,22,0.25); }
+    .item-card.unavailable .add-btn { pointer-events:none; }
+
+    /* cart bar */
+    .cart-bar { position:fixed; bottom:0; left:240px; right:0; z-index:20; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-top:1px solid var(--glass-border); padding:16px 36px; display:flex; align-items:center; justify-content:space-between; transform:translateY(100%); transition:transform 0.3s; }
+    .cart-bar.visible { transform:translateY(0); }
+    .cart-info { font-size:14px; color:var(--text); }
+    .cart-info span { color:#f97316; font-weight:500; }
+    .cart-actions { display:flex; gap:10px; }
+    .clear-btn    { padding:9px 18px; border-radius:10px; font-size:13px; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .checkout-btn { padding:9px 20px; border-radius:10px; font-size:13px; font-weight:500; background:#f97316; color:#fff; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity 0.2s; }
+    .checkout-btn:hover { opacity:0.9; }
+
+    /* receipt modal */
+    .modal-overlay { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,0.75); display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--sidebar-bg); backdrop-filter:blur(28px); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:400px; max-height:90vh; overflow-y:auto; }
+    .modal-title { font-family:'Syne',sans-serif; font-weight:800; font-size:20px; margin-bottom:4px; color:var(--text); }
+    .modal-sub    { font-size:12px; color:var(--muted); margin-bottom:20px; }
+    .receipt-row  { display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-bottom:1px solid var(--glass-border); color:var(--text); }
+    .receipt-total { display:flex; justify-content:space-between; font-size:15px; font-weight:500; padding:12px 0 0; color:var(--text); }
+    .receipt-total span { color:#f97316; }
+    .order-id { font-size:11px; color:var(--muted); margin-top:8px; text-align:center; }
+    .modal-btns { display:flex; gap:10px; margin-top:20px; }
+    .print-btn { flex:1; padding:11px; background:#f97316; color:#fff; border:none; border-radius:12px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .close-btn { flex:1; padding:11px; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); border-radius:12px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 100px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} .cart-bar{left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <!-- sidebar -->
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="store.html"><span class="nav-icon">🛒</span> Store</a>
+    <a class="nav-item" href="scooty.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🍽 Canteen</div>
+        <div class="page-sub">Order fresh food and packaged items. Half or full plate — your choice!</div>
+      </div>
+    </div>
+
+    <div class="status-banner open" id="status-banner">
+      <div class="status-dot"></div>
+      Canteen is Open — accepting orders now
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fresh Food <span class="section-count" id="fresh-count"></span></div>
+      <div class="item-grid" id="fresh-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Packaged Items <span class="section-count" id="pkg-count"></span></div>
+      <div class="item-grid" id="pkg-grid"></div>
+    </div>
+  </div>
+
+  <!-- cart bar -->
+  <div class="cart-bar" id="cart-bar">
+    <div class="cart-info"><span id="cart-count">0</span> items · ₹<span id="cart-total">0</span></div>
+    <div class="cart-actions">
+      <button class="clear-btn" onclick="clearCart()">Clear</button>
+      <button class="checkout-btn" onclick="checkout()">Place Order →</button>
+    </div>
+  </div>
+
+  <!-- receipt modal -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal">
+      <div class="modal-title">🧾 Order Receipt</div>
+      <div class="modal-sub" id="receipt-date"></div>
+      <div id="receipt-items"></div>
+      <div class="receipt-total">Total <span id="receipt-total">₹0</span></div>
+      <div class="order-id" id="order-id"></div>
+      <div class="modal-btns">
+        <button class="print-btn" onclick="window.print()">Print Receipt</button>
+        <button class="close-btn" onclick="closeReceipt()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── image base path ──
+    const IMG = '/static/student/images/canteen/';
+    const NO_IMG = null; // will show placeholder
+
+    // ── MENU DATA ──
+    // half = base price, full = half × 2
+    // img: filename in images/canteen/ or null for placeholder
+    const freshItems = [
+      { id:1,  name:'Veg Chowmein',       half:70,  available:true,  noPlate:false, img:'chowmein.jpg'                        },
+      { id:2,  name:'Chicken Chowmein',   half:80,  available:true,  noPlate:false, img:'chowmein.jpg'                        },
+      { id:3,  name:'Veg Fried Rice',     half:70,  available:true,  noPlate:false, img:NO_IMG                                },
+      { id:4,  name:'Chicken Fried Rice', half:80,  available:true,  noPlate:false, img:NO_IMG                                },
+      { id:5,  name:'Veg Thuppa',         half:80,  available:true,  noPlate:false, img:'Veg_thuppa.jpg'                      },
+      { id:6,  name:'Chicken Thuppa',     half:90,  available:true,  noPlate:false, img:'chicken_thuppa.webp'                 },
+      { id:7,  name:'Boiled Maggi',       half:40,  available:true,  noPlate:false, img:'boiled_vegetable_masala_maggie.jpg'  },
+      { id:8,  name:'Fried Maggi',        half:60,  available:true,  noPlate:false, img:'Fried_maggie.webp'                   },
+      { id:9,  name:'Steamed Momo',       half:70,  available:true,  noPlate:false, img:'steamed_momo.jpg'                    },
+      { id:10, name:'Fried Momo',         half:80,  available:true,  noPlate:false, img:'fried_momo.jpg'                      },
+      { id:11, name:'Veg Roll',    half:50, available:true, noPlate:true, img:'vegetable_roll.jpg' },
+      { id:12, name:'Chicken Roll',half:70, available:true, noPlate:true, img:'chicken_roll.jpg'   },
+      { id:13, name:'Samosa',             half:10,  available:true,  noPlate:true,  img:'samosa.jpg'                          },
+      { id:14, name:'Omelette',           half:15,  available:true,  noPlate:true,  img:'omlette.jpg'                         },
+    ];
+
+    const pkgItems = [
+      { id:15, name:'Biscuits',        half:20, available:true,  noPlate:true, img:'biscuits.webp'      },
+      { id:16, name:'Chips',           half:25, available:true,  noPlate:true, img:'chips.png'          },
+      { id:17, name:'Cold Drink',      half:30, available:true,  noPlate:true, img:'cold_drinks.jpg'    },
+      { id:18, name:'Juice',           half:25, available:false, noPlate:true, img:NO_IMG               },
+      { id:19, name:'Chocolate',       half:40, available:true,  noPlate:true, img:NO_IMG               },
+      { id:20, name:'Instant Noodles', half:25, available:true,  noPlate:true, img:'instant_noodles.png'},
+    ];
+
+    const plateState = {};
+    [...freshItems, ...pkgItems].forEach(i => plateState[i.id] = 'half');
+
+    let cart = [];
+
+    function setPlate(id, plate) {
+      plateState[id] = plate;
+      const item = [...freshItems, ...pkgItems].find(i => i.id === id);
+      document.getElementById('price-' + id).textContent = '₹' + (plate === 'half' ? item.half : item.half * 2);
+      document.querySelectorAll('#plate-' + id + ' .plate-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i===0&&plate==='half') || (i===1&&plate==='full'));
+      });
+    }
+
+    function imgHtml(item) {
+      if (item.img) {
+        return `<img src="${IMG}${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<div class=img-placeholder><div class=ph-icon>📷</div><div class=ph-text>Will update image later</div></div>'"/>`;
+      }
+      return `<div class="img-placeholder"><div class="ph-icon">📷</div><div class="ph-text">Will update image later</div></div>`;
+    }
+
+    function renderItems(items, gridId) {
+      document.getElementById(gridId).innerHTML = items.map(item => `
+        <div class="item-card ${item.available ? '' : 'unavailable'}">
+          <div class="item-img">${imgHtml(item)}</div>
+          <div class="item-body">
+            <div class="item-name">${item.name}</div>
+            <span class="item-avail ${item.available ? 'avail-yes' : 'avail-no'}">${item.available ? 'Available' : 'Unavailable'}</span>
+            ${!item.noPlate ? `
+            <div class="plate-toggle" id="plate-${item.id}">
+              <button class="plate-btn active" onclick="setPlate(${item.id},'half')">Half</button>
+              <button class="plate-btn" onclick="setPlate(${item.id},'full')">Full</button>
+            </div>` : ''}
+            <div class="item-price" id="price-${item.id}">₹${item.half}</div>
+            <button class="add-btn" onclick="addToCart(${item.id})">+ Add to cart</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      const item  = [...freshItems, ...pkgItems].find(i => i.id === id);
+      const plate = plateState[id];
+      const price = item.noPlate ? item.half : (plate === 'half' ? item.half : item.half * 2);
+      const label = item.name + (!item.noPlate ? ` (${plate})` : '');
+      const key   = id + '-' + plate;
+      const exist = cart.find(i => i.key === key);
+      if (exist) exist.qty++;
+      else cart.push({ key, id, name: label, price, qty: 1 });
+      updateCart();
+    }
+
+    function updateCart() {
+      const count = cart.reduce((s, i) => s + i.qty, 0);
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cart-total').textContent = total;
+      document.getElementById('cart-bar').classList.toggle('visible', count > 0);
+    }
+
+    function clearCart() { cart = []; updateCart(); }
+
+    function checkout() {
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('receipt-date').textContent =
+        new Date().toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+      document.getElementById('receipt-items').innerHTML = cart.map(i =>
+        `<div class="receipt-row"><span>${i.name} × ${i.qty}</span><span>₹${i.price * i.qty}</span></div>`
+      ).join('');
+      document.getElementById('receipt-total').textContent = '₹' + total;
+      document.getElementById('order-id').textContent = 'Order ID: CC' + Date.now().toString().slice(-6);
+      document.getElementById('receipt-modal').classList.add('show');
+    }
+
+    async function closeReceipt() {
+  try {
+    await fetch('http://127.0.0.1:5000/api/place-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service: 'canteen',
+        items: cart.map(i => ({ name: i.name, price: i.price * i.qty, qty: i.qty })),
+        total: cart.reduce((s, i) => s + i.price * i.qty, 0)
+      })
+    });
+  } catch(e) { console.log('Order save failed', e); }
+  document.getElementById('receipt-modal').classList.remove('show');
+  clearCart();
+}
+
+    function toggleTheme() {
+      const html    = document.documentElement;
+      const isDark  = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+
+    // ── init ──
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+    document.getElementById('fresh-count').textContent  = freshItems.length + ' items';
+    document.getElementById('pkg-count').textContent    = pkgItems.length + ' items';
+    renderItems(freshItems, 'fresh-grid');
+    renderItems(pkgItems,   'pkg-grid');
+  </script>
+</body>
+</html>

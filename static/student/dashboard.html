@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --stat-bg:rgba(0,0,0,0.35); --time-bg:rgba(0,0,0,0.3);
+      --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#7c2d12; --blob-opacity:0.28;
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --stat-bg:rgba(255,255,255,0.7); --time-bg:rgba(255,255,255,0.6);
+      --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#fed7aa; --blob-opacity:0.5;
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); transition:opacity 0.4s; }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    .sidebar {
+      position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10;
+      background:var(--sidebar-bg);
+      backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+      border-right:1px solid var(--glass-border);
+      display:flex; flex-direction:column; padding:28px 20px;
+      transition:background 0.4s,border-color 0.4s;
+      overflow-y:auto;
+    }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:32px; padding:0 8px; }
+    .logo span { background:linear-gradient(90deg,#ea580c,#d97706); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:20px 0; transition:background 0.4s; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(234,88,12,0.12); color:#f97316; border:1px solid rgba(234,88,12,0.2); }
+    [data-theme="light"] .nav-item.active { color:#c2410c; }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; transition:all 0.2s; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 48px; min-height:100vh; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:30px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; letter-spacing:-1px; color:var(--text); }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+    .time-badge { font-size:12px; color:var(--muted); background:var(--time-bg); border:1px solid var(--glass-border); padding:7px 16px; border-radius:20px; backdrop-filter:blur(10px); transition:all 0.4s; }
+
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:26px; animation:fadeUp 0.5s 0.15s ease both; opacity:0; }
+    .stat { background:var(--stat-bg); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:16px 20px; transition:all 0.4s; }
+    .stat-val { font-family:'Syne',sans-serif; font-weight:800; font-size:26px; margin-bottom:2px; }
+    .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; animation:fadeUp 0.5s 0.2s ease both; opacity:0; }
+    .card { background:var(--card-bg); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px); border:1px solid var(--glass-border); border-radius:22px; padding:26px; cursor:pointer; text-decoration:none; color:inherit; display:block; transition:transform 0.22s,background 0.22s,border-color 0.22s,box-shadow 0.22s; position:relative; overflow:hidden; }
+    .card:hover { transform:translateY(-5px); background:var(--glass-hover); border-color:rgba(234,88,12,0.2); }
+    [data-theme="light"] .card:hover { box-shadow:0 8px 32px rgba(0,0,0,0.08); }
+    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; border-radius:22px 22px 0 0; }
+    .card.canteen::before  { background:linear-gradient(90deg,transparent,rgba(234,88,12,0.7),transparent); }
+    .card.store::before    { background:linear-gradient(90deg,transparent,rgba(5,150,105,0.7),transparent); }
+    .card.scooty::before   { background:linear-gradient(90deg,transparent,rgba(217,119,6,0.7),transparent); }
+    .card.hospital::before  { background:linear-gradient(90deg,transparent,rgba(239,68,68,0.7),transparent); }
+    .card.postoffice::before{ background:linear-gradient(90deg,transparent,rgba(99,102,241,0.7),transparent); }
+    .card.bus::before       { background:linear-gradient(90deg,transparent,rgba(20,184,166,0.7),transparent); }
+
+    .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+    .icon { width:50px; height:50px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+    .canteen  .icon { background:rgba(234,88,12,0.12);  border:1px solid rgba(234,88,12,0.2); }
+    .store    .icon { background:rgba(5,150,105,0.12);  border:1px solid rgba(5,150,105,0.2); }
+    .scooty   .icon { background:rgba(217,119,6,0.12);  border:1px solid rgba(217,119,6,0.2); }
+    .hospital  .icon { background:rgba(239,68,68,0.12);  border:1px solid rgba(239,68,68,0.2); }
+    .postoffice .icon { background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.2); }
+    .bus        .icon { background:rgba(20,184,166,0.12);  border:1px solid rgba(20,184,166,0.2); }
+
+    .pill { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:500; padding:4px 10px; border-radius:20px; }
+    .pill.open   { background:rgba(22,163,74,0.1);  border:1px solid rgba(22,163,74,0.2);  color:#16a34a; }
+    .pill.closed { background:rgba(220,38,38,0.1);  border:1px solid rgba(220,38,38,0.2);  color:#dc2626; }
+    [data-theme="dark"] .pill.open   { color:#4ade80; }
+    [data-theme="dark"] .pill.closed { color:#f87171; }
+    .dot { width:5px; height:5px; border-radius:50%; animation:floatDot 2s ease-in-out infinite; }
+    .open   .dot { background:#16a34a; }
+    .closed .dot { background:#dc2626; }
+    [data-theme="dark"] .open   .dot { background:#4ade80; }
+    [data-theme="dark"] .closed .dot { background:#f87171; }
+
+    .card-name { font-family:'Syne',sans-serif; font-weight:800; font-size:19px; letter-spacing:-0.5px; margin-bottom:6px; color:var(--text); }
+    .card-desc { font-size:12px; color:var(--muted); line-height:1.65; margin-bottom:18px; }
+    .tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px; }
+    .tag { font-size:10px; padding:3px 9px; border-radius:20px; background:var(--glass); border:1px solid var(--glass-border); color:var(--muted); transition:all 0.4s; }
+    .card-btn { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:8px 18px; border-radius:30px; transition:gap 0.2s; }
+    .card:hover .card-btn { gap:10px; }
+    .canteen  .card-btn { background:rgba(234,88,12,0.14); border:1px solid rgba(234,88,12,0.25); color:#c2410c; }
+    .store    .card-btn { background:rgba(5,150,105,0.14); border:1px solid rgba(5,150,105,0.25); color:#059669; }
+    .scooty   .card-btn { background:rgba(217,119,6,0.14); border:1px solid rgba(217,119,6,0.25); color:#d97706; }
+    .hospital   .card-btn { background:rgba(239,68,68,0.14); border:1px solid rgba(239,68,68,0.25); color:#dc2626; }
+    .postoffice .card-btn { background:rgba(99,102,241,0.14);border:1px solid rgba(99,102,241,0.25);color:#6366f1; }
+    .bus        .card-btn { background:rgba(20,184,166,0.14); border:1px solid rgba(20,184,166,0.25); color:#0d9488; }
+    [data-theme="dark"] .canteen    .card-btn { color:#fb923c; }
+    [data-theme="dark"] .store      .card-btn { color:#34d399; }
+    [data-theme="dark"] .scooty     .card-btn { color:#fbbf24; }
+    [data-theme="dark"] .hospital   .card-btn { color:#f87171; }
+    [data-theme="dark"] .postoffice .card-btn { color:#a5b4fc; }
+    [data-theme="dark"] .bus        .card-btn { color:#2dd4bf; }
+
+    @media (max-width:900px)  { .stats{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:768px)  { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px;} }
+    @media (max-width:600px)  { .sidebar{display:none;} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="bg-blob b1"></div>
+    <div class="bg-blob b2"></div>
+    <div class="bg-blob b3"></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item active" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="canteen.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="store.html"><span class="nav-icon">🛒</span> Convenience Store</a>
+    <a class="nav-item" href="scooty.html"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <a class="nav-item" href="hospital.html"><span class="nav-icon">🏥</span> Hospital</a>
+    <a class="nav-item" href="postoffice.html"><span class="nav-icon">📮</span> Post Office</a>
+    <a class="nav-item" href="bus.html"><span class="nav-icon">🚌</span> Bus Service</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+   <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title" id="greeting">Good morning 👋</div>
+        <div class="page-sub">Here's what's open on campus right now.</div>
+      </div>
+      <div class="time-badge" id="time-badge">—</div>
+    </div>
+
+    <!-- 4 stats now -->
+    <div class="stats" style="grid-template-columns:repeat(6,1fr)">
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#ea580c,#d97706);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="open-count">—</div>
+        <div class="stat-label">Open now</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#059669,#34d399);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="menu-count">—</div>
+        <div class="stat-label">Menu items</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#d97706,#fbbf24);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="scooty-count">—</div>
+        <div class="stat-label">Scooties free</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#dc2626,#f87171);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="doctor-count">—</div>
+        <div class="stat-label">Doctors available</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#6366f1,#a5b4fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="post-count">—</div>
+        <div class="stat-label">Post office</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" style="background:linear-gradient(90deg,#0d9488,#2dd4bf);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;" id="bus-count">—</div>
+        <div class="stat-label">Bus running</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <a class="card canteen" href="canteen.html">
+        <div class="card-top"><div class="icon">🍽</div><div class="pill open" id="canteen-status"><div class="dot"></div>Open</div></div>
+        <div class="card-name">Canteen</div>
+        <div class="card-desc">Browse today's menu, check item availability and place your order online.</div>
+        <div class="tags"><span class="tag">Live menu</span><span class="tag">Online order</span><span class="tag">Receipt</span></div>
+        <div class="card-btn">Order now →</div>
+      </a>
+
+      <a class="card store" href="store.html">
+        <div class="card-top"><div class="icon">🛒</div><div class="pill open" id="store-status"><div class="dot"></div>Open</div></div>
+        <div class="card-name">Convenience Store</div>
+        <div class="card-desc">Shop for daily essentials, stationery and snacks available on campus.</div>
+        <div class="tags"><span class="tag">Live stock</span><span class="tag">Online order</span><span class="tag">Receipt</span></div>
+        <div class="card-btn">Shop now →</div>
+      </a>
+
+      <a class="card scooty" href="scooty.html">
+        <div class="card-top"><div class="icon">🛵</div><div class="pill closed" id="scooty-status"><div class="dot"></div>Unavailable</div></div>
+        <div class="card-name">Scooty Rental</div>
+        <div class="card-desc">Book a scooty for your trip, choose dates and get a digital rental agreement.</div>
+        <div class="tags"><span class="tag">Date picker</span><span class="tag">Price calc</span><span class="tag">Agreement</span></div>
+        <div class="card-btn">Book now →</div>
+      </a>
+
+      <!-- ── HOSPITAL CARD ── -->
+      <a class="card hospital" href="hospital.html">
+        <div class="card-top">
+          <div class="icon">🏥</div>
+          <div class="pill open" id="hospital-status"><div class="dot"></div>Doctor available</div>
+        </div>
+        <div class="card-name">Hospital</div>
+        <div class="card-desc">Check doctor availability, view OPD timings and get health support on campus.</div>
+        <div class="tags"><span class="tag">Doctor status</span><span class="tag">OPD hours</span><span class="tag">Emergency</span></div>
+        <div class="card-btn">Visit now →</div>
+      </a>
+
+      <!-- ── POST OFFICE CARD ── -->
+      <a class="card postoffice" href="postoffice.html">
+        <div class="card-top">
+          <div class="icon">📮</div>
+          <div class="pill open" id="postoffice-status"><div class="dot"></div>Open</div>
+        </div>
+        <div class="card-name">Post Office</div>
+        <div class="card-desc">Send parcels, track deliveries and access postal services right on campus.</div>
+        <div class="tags"><span class="tag">Parcel tracking</span><span class="tag">Send mail</span><span class="tag">Timings</span></div>
+        <div class="card-btn">Go now →</div>
+      </a>
+
+      <!-- ── BUS CARD ── -->
+      <a class="card bus" href="bus.html">
+        <div class="card-top">
+          <div class="icon">🚌</div>
+          <div class="pill open" id="bus-status"><div class="dot"></div>Running</div>
+        </div>
+        <div class="card-name">Bus Service</div>
+        <div class="card-desc">Check if the campus bus is running, view routes and next departure timings.</div>
+        <div class="tags"><span class="tag">Live status</span><span class="tag">Routes</span><span class="tag">Timings</span></div>
+        <div class="card-btn">Check now →</div>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+
+    function updateTime() {
+      const now = new Date();
+      const h = now.getHours(), m = now.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      document.getElementById('time-badge').textContent =
+        `${h12}:${String(m).padStart(2,'0')} ${ampm} · ${now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}`;
+      const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('greeting').textContent = greet + ' 👋';
+    }
+    updateTime(); setInterval(updateTime, 1000);
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+
+    async function loadStatus() {
+      try {
+        const res  = await fetch('http://127.0.0.1:5000/api/services/status');
+        const data = await res.json();
+
+        const cs = document.getElementById('canteen-status');
+        cs.className = 'pill ' + (data.canteen.is_open ? 'open' : 'closed');
+        cs.innerHTML = `<div class="dot"></div>${data.canteen.is_open ? 'Open' : 'Closed'}`;
+
+        const ss = document.getElementById('store-status');
+        ss.className = 'pill ' + (data.store.is_open ? 'open' : 'closed');
+        ss.innerHTML = `<div class="dot"></div>${data.store.is_open ? 'Open' : 'Closed'}`;
+
+        const sc = document.getElementById('scooty-status');
+        sc.className = 'pill ' + (data.scooty.available ? 'open' : 'closed');
+        sc.innerHTML = `<div class="dot"></div>${data.scooty.available ? 'Available' : 'Unavailable'}`;
+
+        // hospital — add to your Flask API later
+        const hc = document.getElementById('hospital-status');
+        if (data.hospital) {
+          hc.className = 'pill ' + (data.hospital.doctor_available ? 'open' : 'closed');
+          hc.innerHTML = `<div class="dot"></div>${data.hospital.doctor_available ? 'Doctor available' : 'No doctor'}`;
+          document.getElementById('doctor-count').textContent = data.hospital.doctor_count || '—';
+        }
+
+        // post office — add to your Flask API later
+        const pc = document.getElementById('postoffice-status');
+        if (data.postoffice) {
+          pc.className = 'pill ' + (data.postoffice.is_open ? 'open' : 'closed');
+          pc.innerHTML = `<div class="dot"></div>${data.postoffice.is_open ? 'Open' : 'Closed'}`;
+          document.getElementById('post-count').textContent = data.postoffice.is_open ? 'Open' : 'Closed';
+        }
+
+        // bus — add to your Flask API later
+        const bc = document.getElementById('bus-status');
+        if (data.bus) {
+          bc.className = 'pill ' + (data.bus.is_running ? 'open' : 'closed');
+          bc.innerHTML = `<div class="dot"></div>${data.bus.is_running ? 'Running' : 'Not running'}`;
+          document.getElementById('bus-count').textContent = data.bus.is_running ? 'Yes' : 'No';
+        }
+
+        const openCount = [
+          data.canteen.is_open,
+          data.store.is_open,
+          data.scooty.available,
+          data.hospital?.doctor_available,
+          data.postoffice?.is_open,
+          data.bus?.is_running
+        ].filter(Boolean).length;
+
+        document.getElementById('open-count').textContent   = openCount;
+        document.getElementById('menu-count').textContent   = data.canteen.item_count || '—';
+        document.getElementById('scooty-count').textContent = data.scooty.count || '—';
+      } catch(e) {
+        document.getElementById('open-count').textContent   = '—';
+        document.getElementById('menu-count').textContent   = '—';
+        document.getElementById('scooty-count').textContent = '—';
+        document.getElementById('doctor-count').textContent = '—';
+        document.getElementById('post-count').textContent   = '—';
+        document.getElementById('bus-count').textContent    = '—';
+      }
+    }
+    loadStatus();
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method: 'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+  </script>
+</body>
+</html>

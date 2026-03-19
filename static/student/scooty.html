@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scooty Rental — Campus Connect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    [data-theme="dark"] {
+      --bg:#06060f; --text:#e2e8f0; --muted:rgba(255,255,255,0.38);
+      --glass:rgba(255,255,255,0.04); --glass-hover:rgba(255,255,255,0.07);
+      --glass-border:rgba(255,255,255,0.08); --sidebar-bg:rgba(0,0,0,0.45);
+      --card-bg:rgba(0,0,0,0.38); --blob1:#4c1d95; --blob2:#0c4a6e; --blob3:#713f12; --blob-opacity:0.28;
+      --input-bg:rgba(255,255,255,0.05); --input-border:rgba(255,255,255,0.1);
+    }
+    [data-theme="light"] {
+      --bg:#f0f4ff; --text:#1e1b4b; --muted:rgba(30,27,75,0.5);
+      --glass:rgba(255,255,255,0.65); --glass-hover:rgba(255,255,255,0.85);
+      --glass-border:rgba(30,27,75,0.1); --sidebar-bg:rgba(255,255,255,0.7);
+      --card-bg:rgba(255,255,255,0.6); --blob1:#c4b5fd; --blob2:#bae6fd; --blob3:#fde68a; --blob-opacity:0.5;
+      --input-bg:rgba(255,255,255,0.8); --input-border:rgba(30,27,75,0.15);
+    }
+
+    body { font-family:'DM Sans',sans-serif; color:var(--text); min-height:100vh; background:var(--bg); display:flex; overflow-x:hidden; transition:background 0.4s,color 0.4s; }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatDot { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes slideIn  { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+
+    .bg { position:fixed; inset:0; z-index:0; overflow:hidden; }
+    .bg-blob { position:absolute; border-radius:50%; filter:blur(110px); opacity:var(--blob-opacity); }
+    .b1 { width:550px; height:550px; background:var(--blob1); top:-180px; left:-120px; animation:rotateBg 22s linear infinite; }
+    .b2 { width:480px; height:480px; background:var(--blob2); bottom:-120px; right:-100px; animation:rotateBg 28s linear infinite reverse; }
+    .b3 { width:380px; height:380px; background:var(--blob3); top:35%; left:38%; animation:rotateBg 20s linear infinite; }
+
+    /* sidebar */
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:240px; z-index:10; background:var(--sidebar-bg); backdrop-filter:blur(28px); border-right:1px solid var(--glass-border); display:flex; flex-direction:column; padding:28px 20px; transition:background 0.4s; overflow-y:auto; }
+    .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:14px; letter-spacing:-0.5px; margin-bottom:28px; padding:0 8px; }
+    .logo span { color:#f97316; }
+    .avatar { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#c2410c,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+    .student-name { font-size:14px; font-weight:500; margin-bottom:3px; color:var(--text); }
+    .student-roll { font-size:11px; color:var(--muted); }
+    .divider { height:1px; background:var(--glass-border); margin:18px 0; }
+    .nav-label { font-size:10px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; padding:0 8px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); cursor:pointer; transition:all 0.2s; margin-bottom:4px; text-decoration:none; }
+    .nav-item:hover { background:var(--glass-hover); color:var(--text); }
+    .nav-item.active { background:rgba(249,115,22,0.12); color:#f97316; border:1px solid rgba(249,115,22,0.2); }
+    .nav-icon { font-size:15px; width:20px; text-align:center; }
+    .sidebar-bottom { margin-top:auto; display:flex; flex-direction:column; gap:8px; }
+    .theme-toggle { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-border); background:var(--glass); cursor:pointer; }
+    .toggle-label { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .toggle-track { width:36px; height:20px; border-radius:10px; background:rgba(234,88,12,0.3); position:relative; transition:background 0.3s; flex-shrink:0; }
+    [data-theme="light"] .toggle-track { background:rgba(234,88,12,0.6); }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.3s; }
+    [data-theme="light"] .toggle-thumb { transform:translateX(16px); }
+    .logout-btn { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:12px; font-size:13px; color:var(--muted); background:none; border:1px solid var(--glass-border); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.08); color:#f87171; border-color:rgba(239,68,68,0.2); }
+
+    /* main */
+    .main { margin-left:240px; flex:1; position:relative; z-index:5; padding:36px 36px 60px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; animation:fadeUp 0.4s 0.1s ease both; opacity:0; }
+    .page-title { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; letter-spacing:-1px; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:3px; }
+
+    .status-banner { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px; margin-bottom:28px; font-size:13px; font-weight:500; animation:fadeUp 0.4s 0.15s ease both; opacity:0; }
+    .status-banner.open   { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); color:#10b981; }
+    .status-banner.closed { background:rgba(239,68,68,0.1);  border:1px solid rgba(239,68,68,0.2); color:#f87171; }
+    .status-dot { width:8px; height:8px; border-radius:50%; animation:floatDot 2s ease-in-out infinite; }
+    .open .status-dot   { background:#10b981; }
+    .closed .status-dot { background:#f87171; }
+
+    /* two col layout */
+    .content-grid { display:grid; grid-template-columns:1fr 340px; gap:24px; animation:fadeUp 0.5s 0.2s ease both; opacity:0; }
+
+    /* scooties grid */
+    .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .section-count { font-size:11px; font-weight:400; color:var(--muted); background:var(--glass); border:1px solid var(--glass-border); padding:2px 8px; border-radius:20px; }
+
+    .scooty-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+    .scooty-card { background:var(--card-bg); backdrop-filter:blur(16px); border:2px solid var(--glass-border); border-radius:16px; padding:18px 14px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
+    .scooty-card:hover:not(.booked) { transform:translateY(-3px); border-color:rgba(249,115,22,0.35); }
+    .scooty-card.selected { border-color:#f97316; background:rgba(249,115,22,0.08); }
+    .scooty-card.booked   { opacity:0.4; cursor:not-allowed; }
+    .scooty-emoji  { font-size:32px; margin-bottom:8px; display:block; }
+    .scooty-id     { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .scooty-model  { font-size:11px; color:var(--muted); margin-bottom:8px; }
+    .scooty-status { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:500; display:inline-block; }
+    .status-free   { background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2); }
+    .status-booked { background:rgba(239,68,68,0.1);  color:#f87171; border:1px solid rgba(239,68,68,0.2); }
+    .selected-tick { position:absolute; top:10px; right:10px; font-size:14px; }
+
+    /* booking panel */
+    .booking-panel { background:var(--card-bg); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:20px; padding:24px; position:sticky; top:24px; height:fit-content; }
+    .booking-title { font-family:'Syne',sans-serif; font-weight:800; font-size:17px; margin-bottom:20px; color:var(--text); }
+
+    .selected-scooty-preview { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; background:rgba(249,115,22,0.08); border:1px solid rgba(249,115,22,0.2); margin-bottom:20px; }
+    .preview-emoji { font-size:28px; }
+    .preview-info  { flex:1; }
+    .preview-id    { font-size:13px; font-weight:500; color:var(--text); }
+    .preview-model { font-size:11px; color:var(--muted); }
+    .no-selection  { text-align:center; padding:16px; color:var(--muted); font-size:13px; margin-bottom:20px; border:1px dashed var(--glass-border); border-radius:12px; }
+
+    .form-group  { margin-bottom:14px; }
+    .form-label  { font-size:11px; color:var(--muted); margin-bottom:6px; display:block; letter-spacing:0.04em; text-transform:uppercase; }
+    .form-input  { width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; }
+    .form-input:focus { border-color:rgba(249,115,22,0.4); }
+
+    /* rental type toggle */
+    .rental-toggle { display:flex; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border); border-radius:10px; padding:3px; margin-bottom:14px; }
+    .rental-btn { flex:1; padding:8px; font-size:12px; font-weight:500; border:none; background:transparent; color:var(--muted); cursor:pointer; border-radius:7px; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+    .rental-btn.active { background:rgba(249,115,22,0.18); color:#f97316; }
+
+    .price-preview { padding:14px; border-radius:12px; background:var(--glass); border:1px solid var(--glass-border); margin-bottom:16px; }
+    .price-row   { display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-bottom:6px; }
+    .price-total { display:flex; justify-content:space-between; font-size:15px; font-weight:600; color:var(--text); padding-top:8px; border-top:1px solid var(--glass-border); }
+    .price-total span { color:#f97316; }
+
+    .book-btn { width:100%; padding:13px; background:#f97316; color:#fff; border:none; border-radius:12px; font-size:14px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity 0.2s,transform 0.15s; }
+    .book-btn:hover { opacity:0.9; transform:translateY(-1px); }
+    .book-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+    /* agreement modal */
+    .modal-overlay { position:fixed; inset:0; z-index:30; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--sidebar-bg); backdrop-filter:blur(28px); border:1px solid var(--glass-border); border-radius:20px; padding:32px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; animation:slideIn 0.3s ease; }
+
+    .agreement-header { text-align:center; margin-bottom:24px; }
+    .agreement-logo   { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--text); margin-bottom:4px; }
+    .agreement-logo span { color:#f97316; }
+    .agreement-subtitle { font-size:11px; color:var(--muted); }
+    .agreement-title  { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; margin:16px 0 4px; color:var(--text); }
+    .agreement-id     { font-size:11px; color:var(--muted); }
+
+    .agreement-divider { height:1px; background:var(--glass-border); margin:20px 0; }
+
+    .agreement-section { margin-bottom:20px; }
+    .ag-section-title  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+    .ag-row  { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--glass-border); font-size:13px; }
+    .ag-row:last-child { border-bottom:none; }
+    .ag-label { color:var(--muted); }
+    .ag-value { color:var(--text); font-weight:500; text-align:right; }
+    .ag-value.highlight { color:#f97316; }
+
+    .agreement-stamp { text-align:center; margin:20px 0; padding:16px; border:2px solid rgba(249,115,22,0.3); border-radius:12px; background:rgba(249,115,22,0.05); }
+    .stamp-text  { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:#f97316; letter-spacing:2px; }
+    .stamp-sub   { font-size:11px; color:var(--muted); margin-top:4px; }
+
+    .modal-btns  { display:flex; gap:10px; margin-top:20px; }
+    .print-btn   { flex:1; padding:11px; background:#f97316; color:#fff; border:none; border-radius:12px; font-size:13px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; }
+    .close-btn   { flex:1; padding:11px; background:var(--glass); color:var(--muted); border:1px solid var(--glass-border); border-radius:12px; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+    @media (max-width:900px) { .content-grid{grid-template-columns:1fr;} .booking-panel{position:static;} }
+    @media (max-width:768px) { .sidebar{width:200px;} .main{margin-left:200px;padding:24px 20px 40px;} }
+    @media (max-width:600px) { .sidebar{display:none;} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="bg-blob b1"></div><div class="bg-blob b2"></div><div class="bg-blob b3"></div></div>
+
+  <div class="sidebar">
+    <div class="logo">Campus <span>Connect</span></div>
+    <div class="avatar">🎓</div>
+    <div class="student-name" id="student-name">Student</div>
+    <div class="student-roll" id="student-roll">CS25B001</div>
+    <div class="divider"></div>
+    <div class="nav-label">Services</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-item" href="canteen.html"><span class="nav-icon">🍽</span> Canteen</a>
+    <a class="nav-item" href="store.html"><span class="nav-icon">🛒</span> Store</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🛵</span> Scooty Rental</a>
+    <div class="divider"></div>
+    <div class="nav-label">Account</div>
+    <a class="nav-item" href="#"><span class="nav-icon">👤</span> My Profile</a>
+    <a class="nav-item" href="/student/my-orders"><span class="nav-icon">🧾</span> My Orders</a>
+    <div class="sidebar-bottom">
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="toggle-label"><span id="theme-icon">🌙</span><span id="theme-label">Dark mode</span></div>
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()"><span>🚪</span> Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="top-bar">
+      <div>
+        <div class="page-title">🛵 Scooty Rental</div>
+        <div class="page-sub">Pick a scooty, choose your duration, get your digital agreement instantly!</div>
+      </div>
+    </div>
+
+    <div class="status-banner open" id="status-banner">
+      <div class="status-dot"></div>
+      Rental service is Open — scooties available now
+    </div>
+
+    <div class="content-grid">
+      <!-- Left: Scooty selection -->
+      <div>
+        <div class="section-title">Available Scooties <span class="section-count" id="avail-count"></span></div>
+        <div class="scooty-grid" id="scooty-grid"></div>
+      </div>
+
+      <!-- Right: Booking panel -->
+      <div class="booking-panel">
+        <div class="booking-title">📋 Book a Scooty</div>
+
+        <div id="scooty-preview-wrap">
+          <div class="no-selection" id="no-selection">← Select a scooty to continue</div>
+          <div class="selected-scooty-preview" id="scooty-preview" style="display:none">
+            <div class="preview-emoji" id="preview-emoji">🛵</div>
+            <div class="preview-info">
+              <div class="preview-id"   id="preview-id">SC-01</div>
+              <div class="preview-model" id="preview-model">Honda Activa</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">Your Name</div>
+          <input class="form-input" id="f-name" type="text" placeholder="Full name"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Roll Number</div>
+          <input class="form-input" id="f-roll" type="text" placeholder="e.g. CS25B001"/>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Rental Type</div>
+          <div class="rental-toggle">
+            <button class="rental-btn active" id="btn-hourly" onclick="setRentalType('hourly')">⏱ Hourly</button>
+            <button class="rental-btn"        id="btn-daily"  onclick="setRentalType('daily')">📅 Daily</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Start Date &amp; Time</div>
+          <input class="form-input" id="f-start" type="datetime-local"/>
+        </div>
+        <div class="form-group" id="hours-group">
+          <div class="form-label">Number of Hours</div>
+          <input class="form-input" id="f-hours" type="number" min="1" max="12" value="1" oninput="calcPrice()"/>
+        </div>
+        <div class="form-group" id="days-group" style="display:none">
+          <div class="form-label">Number of Days</div>
+          <input class="form-input" id="f-days" type="number" min="1" max="30" value="1" oninput="calcPrice()"/>
+        </div>
+
+        <div class="price-preview">
+          <div class="price-row"><span>Rate</span><span id="rate-text">₹30 / hour</span></div>
+          <div class="price-row"><span>Duration</span><span id="duration-text">1 hour</span></div>
+          <div class="price-total"><span>Total</span><span id="total-text">₹30</span></div>
+        </div>
+
+        <button class="book-btn" id="book-btn" onclick="bookScooty()" disabled>Confirm Booking →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Digital Agreement Modal -->
+  <div class="modal-overlay" id="agreement-modal">
+    <div class="modal">
+      <div class="agreement-header">
+        <div class="agreement-logo">Campus <span>Connect</span></div>
+        <div class="agreement-subtitle">Official Rental Agreement</div>
+        <div class="agreement-title">🛵 Scooty Rental</div>
+        <div class="agreement-id" id="ag-id">Agreement ID: SR000000</div>
+      </div>
+
+      <div class="agreement-divider"></div>
+
+      <div class="agreement-section">
+        <div class="ag-section-title">Student Details</div>
+        <div class="ag-row"><span class="ag-label">Name</span><span class="ag-value" id="ag-name">—</span></div>
+        <div class="ag-row"><span class="ag-label">Roll Number</span><span class="ag-value" id="ag-roll">—</span></div>
+      </div>
+
+      <div class="agreement-section">
+        <div class="ag-section-title">Scooty Details</div>
+        <div class="ag-row"><span class="ag-label">Scooty ID</span><span class="ag-value" id="ag-scooty-id">—</span></div>
+        <div class="ag-row"><span class="ag-label">Model</span><span class="ag-value" id="ag-model">—</span></div>
+      </div>
+
+      <div class="agreement-section">
+        <div class="ag-section-title">Rental Details</div>
+        <div class="ag-row"><span class="ag-label">Start</span><span class="ag-value" id="ag-start">—</span></div>
+        <div class="ag-row"><span class="ag-label">Duration</span><span class="ag-value" id="ag-duration">—</span></div>
+        <div class="ag-row"><span class="ag-label">Rate</span><span class="ag-value" id="ag-rate">—</span></div>
+      </div>
+
+      <div class="agreement-section">
+        <div class="ag-section-title">Payment</div>
+        <div class="ag-row"><span class="ag-label">Total Amount</span><span class="ag-value highlight" id="ag-total">₹0</span></div>
+        <div class="ag-row"><span class="ag-label">Payment Status</span><span class="ag-value highlight">✅ Confirmed</span></div>
+      </div>
+
+      <div class="agreement-stamp">
+        <div class="stamp-text">CONFIRMED</div>
+        <div class="stamp-sub" id="ag-timestamp">—</div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="print-btn" onclick="window.print()">🖨 Print Agreement</button>
+        <button class="close-btn" onclick="closeAgreement()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scooties = [
+      { id:'SC-01', model:'Honda Activa',   hourlyRate:30, dailyRate:200, available:true  },
+      { id:'SC-02', model:'TVS Jupiter',    hourlyRate:30, dailyRate:200, available:true  },
+      { id:'SC-03', model:'Suzuki Access',  hourlyRate:35, dailyRate:220, available:false },
+      { id:'SC-04', model:'Honda Dio',      hourlyRate:25, dailyRate:180, available:true  },
+      { id:'SC-05', model:'Yamaha Fascino', hourlyRate:35, dailyRate:220, available:true  },
+      { id:'SC-06', model:'TVS Ntorq',      hourlyRate:40, dailyRate:250, available:false },
+      { id:'SC-07', model:'Honda Activa 6G',hourlyRate:30, dailyRate:200, available:true  },
+      { id:'SC-08', model:'Suzuki Burgman', hourlyRate:40, dailyRate:250, available:true  },
+    ];
+
+    let selectedScooty = null;
+    let rentalType = 'hourly';
+
+    // set default datetime to now
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('f-start').value = now.toISOString().slice(0,16);
+
+    // prefill name & roll from localStorage
+    document.getElementById('f-name').value = localStorage.getItem('student_name') || '';
+    document.getElementById('f-roll').value = localStorage.getItem('student_roll') || '';
+
+    function renderScooties() {
+      const avail = scooties.filter(s => s.available).length;
+      document.getElementById('avail-count').textContent = avail + ' available';
+      document.getElementById('scooty-grid').innerHTML = scooties.map(s => `
+        <div class="scooty-card ${s.available ? '' : 'booked'} ${selectedScooty?.id === s.id ? 'selected' : ''}"
+          onclick="${s.available ? `selectScooty('${s.id}')` : ''}">
+          ${selectedScooty?.id === s.id ? '<div class="selected-tick">✅</div>' : ''}
+          <span class="scooty-emoji">🛵</span>
+          <div class="scooty-id">${s.id}</div>
+          <div class="scooty-model">${s.model}</div>
+          <span class="scooty-status ${s.available ? 'status-free' : 'status-booked'}">
+            ${s.available ? 'Available' : 'Booked'}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function selectScooty(id) {
+      selectedScooty = scooties.find(s => s.id === id);
+      document.getElementById('no-selection').style.display = 'none';
+      document.getElementById('scooty-preview').style.display = 'flex';
+      document.getElementById('preview-id').textContent    = selectedScooty.id;
+      document.getElementById('preview-model').textContent = selectedScooty.model;
+      calcPrice();
+      checkBookBtn();
+      renderScooties();
+    }
+
+    function setRentalType(type) {
+      rentalType = type;
+      document.getElementById('btn-hourly').classList.toggle('active', type === 'hourly');
+      document.getElementById('btn-daily').classList.toggle('active',  type === 'daily');
+      document.getElementById('hours-group').style.display = type === 'hourly' ? '' : 'none';
+      document.getElementById('days-group').style.display  = type === 'daily'  ? '' : 'none';
+      calcPrice();
+    }
+
+    function calcPrice() {
+      if (!selectedScooty) return;
+      const hours = parseInt(document.getElementById('f-hours').value) || 1;
+      const days  = parseInt(document.getElementById('f-days').value)  || 1;
+      if (rentalType === 'hourly') {
+        const total = selectedScooty.hourlyRate * hours;
+        document.getElementById('rate-text').textContent     = '₹' + selectedScooty.hourlyRate + ' / hour';
+        document.getElementById('duration-text').textContent = hours + (hours === 1 ? ' hour' : ' hours');
+        document.getElementById('total-text').textContent    = '₹' + total;
+      } else {
+        const total = selectedScooty.dailyRate * days;
+        document.getElementById('rate-text').textContent     = '₹' + selectedScooty.dailyRate + ' / day';
+        document.getElementById('duration-text').textContent = days + (days === 1 ? ' day' : ' days');
+        document.getElementById('total-text').textContent    = '₹' + total;
+      }
+    }
+
+    function checkBookBtn() {
+      const name = document.getElementById('f-name').value.trim();
+      const roll = document.getElementById('f-roll').value.trim();
+      document.getElementById('book-btn').disabled = !(selectedScooty && name && roll);
+    }
+
+    document.getElementById('f-name').addEventListener('input', checkBookBtn);
+    document.getElementById('f-roll').addEventListener('input', checkBookBtn);
+
+    function bookScooty() {
+      const name     = document.getElementById('f-name').value.trim();
+      const roll     = document.getElementById('f-roll').value.trim();
+      const startRaw = document.getElementById('f-start').value;
+      const hours    = parseInt(document.getElementById('f-hours').value) || 1;
+      const days     = parseInt(document.getElementById('f-days').value)  || 1;
+      const duration = rentalType === 'hourly'
+        ? hours + (hours === 1 ? ' hour' : ' hours')
+        : days  + (days  === 1 ? ' day'  : ' days');
+      const total = rentalType === 'hourly'
+        ? selectedScooty.hourlyRate * hours
+        : selectedScooty.dailyRate * days;
+      const rate = rentalType === 'hourly'
+        ? '₹' + selectedScooty.hourlyRate + ' / hour'
+        : '₹' + selectedScooty.dailyRate + ' / day';
+      const startFormatted = new Date(startRaw).toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+      const agId = 'SR' + Date.now().toString().slice(-6);
+
+      document.getElementById('ag-id').textContent       = 'Agreement ID: ' + agId;
+      document.getElementById('ag-name').textContent     = name;
+      document.getElementById('ag-roll').textContent     = roll;
+      document.getElementById('ag-scooty-id').textContent= selectedScooty.id;
+      document.getElementById('ag-model').textContent    = selectedScooty.model;
+      document.getElementById('ag-start').textContent    = startFormatted;
+      document.getElementById('ag-duration').textContent = duration;
+      document.getElementById('ag-rate').textContent     = rate;
+      document.getElementById('ag-total').textContent    = '₹' + total;
+      document.getElementById('ag-timestamp').textContent=
+        'Issued: ' + new Date().toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' });
+
+      document.getElementById('agreement-modal').classList.add('show');
+    }
+
+    async function closeAgreement() {
+  try {
+    await fetch('http://127.0.0.1:5000/api/place-scooty', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        scootyId:   selectedScooty.id,
+        model:      selectedScooty.model,
+        rentalType: rentalType,
+        duration:   document.getElementById('ag-duration').textContent,
+        start:      document.getElementById('ag-start').textContent,
+        total:      parseInt(document.getElementById('ag-total').textContent.replace('₹',''))
+      })
+    });
+  } catch(e) { console.log('Booking save failed', e); }
+  document.getElementById('agreement-modal').classList.remove('show');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      document.getElementById('theme-icon').textContent  = isDark ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
+    }
+
+    async function handleLogout() {
+      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      localStorage.removeItem('student_name');
+      window.location.href = '../index.html';
+    }
+
+    document.getElementById('agreement-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeAgreement();
+    });
+
+    // init
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.getElementById('theme-icon').textContent  = '☀️';
+      document.getElementById('theme-label').textContent = 'Light mode';
+    }
+    document.getElementById('student-name').textContent = localStorage.getItem('student_name') || 'Student';
+    renderScooties();
+  </script>
+</body>
+</html>
