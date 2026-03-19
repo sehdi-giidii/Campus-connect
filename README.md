@@ -56,7 +56,7 @@ Campus Connect provides a single web platform where:
 2. Clone the repository:
 
 ```
-git clone <https://github.com/sehdi-giidii/Campus-connect.gitt>
+git clone <https://github.com/sehdi-giidii/Campus-connect.git>
 ```
 
 3. Navigate to project folder:
