@@ -218,7 +218,7 @@
       document.getElementById('theme-label').textContent = isDark ? 'Light mode' : 'Dark mode';
     }
     async function handleLogout() {
-      try { await fetch('http://127.0.0.1:5000/api/logout', { method:'POST' }); } catch(e) {}
+      try { await fetch('const res = await fetch('/api/student/login', {/api/logout', { method:'POST' }); } catch(e) {}
       localStorage.removeItem('student_name');
       window.location.href = '../index.html';
     }

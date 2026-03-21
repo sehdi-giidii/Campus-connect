@@ -281,7 +281,7 @@ async function handleLogin() {
   const pass  = document.getElementById('login-pass').value.trim();
   if (!email || !pass) { alert('Please fill in all fields.'); return; }
 
-  const res  = await fetch('http://127.0.0.1:5000/api/student/login', {
+  const res  = await fetch('const res = await fetch('/api/student/login', {/api/student/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email: email, password: pass })
@@ -304,7 +304,7 @@ async function handleSignup() {
   const pass  = document.getElementById('signup-pass').value.trim();
   if (!name || !email || !roll || !pass) { alert('Please fill in all fields.'); return; }
 
-  const res  = await fetch('http://127.0.0.1:5000/api/student/signup', {
+  const res  = await fetch('const res = await fetch('/api/student/login', {/api/student/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: name, email: email, roll: roll, password: pass })

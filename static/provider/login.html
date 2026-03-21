@@ -287,7 +287,7 @@
       const pass  = document.getElementById('login-pass').value.trim();
       if (!email || !pass) { showError('login-error', 'Please fill in all fields.'); return; }
 
-      const res  = await fetch('http://127.0.0.1:5000/api/provider/login', {
+      const res  = await fetch('const res = await fetch('/api/student/login', {/api/provider/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password: pass })
       });
@@ -318,7 +318,7 @@
       if (!selectedService)         { showError('signup-error', 'Please select your service.'); return; }
       if (pass.length < 6)          { showError('signup-error', 'Password must be at least 6 characters.'); return; }
 
-      const res  = await fetch('http://127.0.0.1:5000/api/provider/signup', {
+      const res  = await fetch('const res = await fetch('/api/student/login', {/api/provider/signup', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password: pass, service: selectedService })
       });
