@@ -36,18 +36,18 @@ def create_app():
     @app.route('/student/<path:filename>')
     def student_pages(filename):
         return send_from_directory('static/student', filename)
-    
+
     @app.route('/provider/<path:filename>')
     def provider_pages(filename):
         return send_from_directory('static/provider', filename)
-    
-    app.route('/static/<path:filename>')        
+
+    @app.route('/static/<path:filename>')
     def static_files(filename):
         return send_from_directory('static', filename)
 
     @app.route('/canteen-provider')
     def canteen_provider():
-        return send_from_directory('static/provider', 'canteen_provider.html') 
+        return send_from_directory('static/provider', 'canteen_provider.html')
 
     @app.route('/student/store')
     def student_store():
@@ -55,8 +55,8 @@ def create_app():
 
     @app.route('/provider/store')
     def provider_store():
-        return send_from_directory('static/provider', 'store_provider.html')  
-    
+        return send_from_directory('static/provider', 'store_provider.html')
+
     @app.route('/student/scooty')
     def student_scooty():
         return send_from_directory('static/student', 'scooty.html')
@@ -91,12 +91,12 @@ def create_app():
 
     @app.route('/student/bus')
     def bus_page():
-        return send_from_directory('static/student', 'bus.html')    
+        return send_from_directory('static/student', 'bus.html')
 
     return app
 
-if __name__ == '__main__':
-    app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=False)
-
+# This is used by gunicorn
 app = create_app()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=False)
